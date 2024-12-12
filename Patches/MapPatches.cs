@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static Il2CppTMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 namespace ImprovedCougar.Patches
 {
@@ -14,11 +13,11 @@ namespace ImprovedCougar.Patches
 
         [HarmonyPatch(nameof(CougarTerritoryZoneTrigger), nameof(CougarTerritoryZoneTrigger.ActivateZone))]
 
-        public class tst
+        public class SetMapRadiusToZero
         {
-            public static void Prefix(ref bool enable)
+            public static void Prefix(CougarTerritoryZoneTrigger __instance)
             {
-                if (enable) { Main.Logger.Log("enabling cougar territory", ComplexLogger.FlaggedLoggingLevel.Debug); }
+                __instance.m_MapRevealRadius = 0;
             }
         }
 
@@ -26,24 +25,7 @@ namespace ImprovedCougar.Patches
 
         public class PreventMappingOnCougarTerritory
         {
-
-            public static bool Prefix(Panel_Map __instance)
-            {
-                //get the caller method from the stack trace
-                StackTrace stackTrace = new StackTrace();
-
-                foreach (var frame in stackTrace.GetFrames())
-                {
-                    Main.Logger.Log($"Method: {frame.GetMethod().Name}", ComplexLogger.FlaggedLoggingLevel.Debug);
-                }
-
-                if (stackTrace.GetFrames().Any(frame => frame.GetMethod().Name.Contains("ActivateZone")))
-                {
-                    return false;
-                }
-                return true;
-            }
-
+            public static bool Prefix(Panel_Map __instance, ref float radius) => radius == 0 ? false : true;
         }
 
         [HarmonyPatch(nameof(MapDetail), nameof(MapDetail.ShowOnMap))]
@@ -52,14 +34,13 @@ namespace ImprovedCougar.Patches
         {
             public static void Prefix(MapDetail __instance, ref bool isShownOnMap) 
             {
-
+                
                 if (__instance.m_SpriteName == "ico_CougarMap")
                 {
                     isShownOnMap = true;
                 }
-                isShownOnMap = false;
+                isShownOnMap = false; 
             }
-
         }
     }
 }
