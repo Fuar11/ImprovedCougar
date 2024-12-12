@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<LangVersion>Latest</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<DebugType>none</DebugType>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<TheLongDarkPath>C:\Program Files (x86)\Steam\steamapps\common\TheLongDark</TheLongDarkPath>
+	</PropertyGroup>
+
+	<!-- List of used references -->
+	<ItemGroup>
+		<PackageReference Include="STBlade.Modding.TLD.Il2CppAssemblies.Windows" Version="2.35.0" />
+		<PackageReference Include="STBlade.Modding.TLD.ModSettings" Version="1.9.0" />
+		<PackageReference Include="STBlade.Modding.TLD.ModComponent" Version="6.0.1" />
+		<PackageReference Include="STBlade.Modding.TLD.GearSpawner" Version="2.3.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="ComplexLogger">
+			<HintPath>$(TheLongDarkPath)\Mods\ComplexLogger.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	
+	<ItemGroup>
+		<Using Include="System.Reflection" />
+		<Using Include="System.Diagnostics.CodeAnalysis" />
+		<Using Include="Il2Cpp" />
+		<Using Include="HarmonyLib" />
+		<Using Include="MelonLoader" />
+		<Using Include="UnityEngine" />
+		<Using Include="ModSettings" />
+		<Using Include="ModComponent" />
+		<Using Include="LocalizationUtilities" />
+		<Using Include="CraftingRevisions" />
+		<Using Include="GearSpawner" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Settings\" />
+	</ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(TheLongDarkPath)/Mods" />
+	</Target>
+
+</Project>
