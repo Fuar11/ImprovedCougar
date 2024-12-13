@@ -12,12 +12,12 @@ namespace ImprovedCougar.Settings
         [Section("Cougar Attributes")]
 
         [Name("Cougar Max Health")]
-        [Description("Max health for the cougar. \n(Vanilla = 300")]
+        [Description("Max health for the cougar. \n(Vanilla = 300)")]
         [Slider(100f, 300f)]
-        public float cougarHP = 300f;
+        public float cougarHP = 250f;
 
         [Name("Cougar Attack Speed")]
-        [Description("Run speed for the cougar when attacking. \n(Vanilla = 14")]
+        [Description("Run speed for the cougar when attacking. \n(Vanilla = 14)")]
         [Slider(14f, 20f)]
         public float cougarSpeed = 18f;
 

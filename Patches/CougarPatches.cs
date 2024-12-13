@@ -17,8 +17,11 @@ namespace ImprovedCougar.Patches
         {
             public static void Postfix(BaseAi __instance)
             {
-                __instance.m_MaxHP = CustomSettings.settings.cougarHP;
-                __instance.m_ChasePlayerSpeed = CustomSettings.settings.cougarSpeed;
+                if(__instance.m_AiSubType == AiSubType.Cougar)
+                {
+                    __instance.m_MaxHP = CustomSettings.settings.cougarHP;
+                    __instance.m_ChasePlayerSpeed = CustomSettings.settings.cougarSpeed;
+                }
             }
         }
 
