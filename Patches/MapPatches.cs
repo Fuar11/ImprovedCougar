@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ImprovedCougar.Settings;
 
 namespace ImprovedCougar.Patches
 {
@@ -17,7 +18,7 @@ namespace ImprovedCougar.Patches
         {
             public static void Prefix(CougarTerritoryZoneTrigger __instance)
             {
-                __instance.m_MapRevealRadius = 0;
+                if(CustomSettings.settings.showTerritory) __instance.m_MapRevealRadius = 0;
             }
         }
 
@@ -34,12 +35,9 @@ namespace ImprovedCougar.Patches
         {
             public static void Prefix(MapDetail __instance, ref bool isShownOnMap) 
             {
-                
-                if (__instance.m_SpriteName == "ico_CougarMap")
-                {
-                    isShownOnMap = true;
-                }
-                isShownOnMap = false; 
+                if (CustomSettings.settings.showIcon) return;
+
+                isShownOnMap = __instance.m_SpriteName == "ico_CougarMap" ? true : false;
             }
         }
     }

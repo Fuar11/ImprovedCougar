@@ -9,6 +9,7 @@ namespace ImprovedCougar
         public override void OnInitializeMelon()
         {
             Logger.Log("Improved Cougar is online", FlaggedLoggingLevel.Always);
+            Settings.CustomSettings.OnLoad();
         }
     }
 }

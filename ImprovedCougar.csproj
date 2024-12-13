@@ -41,9 +41,6 @@
 		<Using Include="CraftingRevisions" />
 		<Using Include="GearSpawner" />
 	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="Settings\" />
-	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(TheLongDarkPath)/Mods" />
