@@ -37,7 +37,7 @@ namespace ImprovedCougar.Patches
             {
                 if (CustomSettings.settings.showIcon) return;
 
-                isShownOnMap = __instance.m_SpriteName == "ico_CougarMap" ? true : false;
+                isShownOnMap = GameManager.GetCougarManager().m_ActiveTerritory.m_CougarState == CougarManager.CougarState.HasArrived && __instance.m_SpriteName == "ico_CougarMap" ? true : false;
             }
         }
     }
