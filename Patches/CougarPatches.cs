@@ -15,6 +15,7 @@ namespace ImprovedCougar.Patches
 
         public class TweakCougarSettings
         {
+            //this will be changed
             public static void Postfix(BaseAi __instance)
             {
                 if(__instance.m_AiSubType == AiSubType.Cougar)
