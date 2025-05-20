@@ -1,5 +1,6 @@
 using ComplexLogger;
 using Il2Cpp;
+using ExpandedAiFramework;
 
 namespace ImprovedCougar
 {
@@ -15,8 +16,7 @@ namespace ImprovedCougar
 
         protected bool Initialize()
         {
-            //return EAFManager.Instance.RegisterSpawnableAi(typeof(TrackingWolf), TrackingWolf.Settings);
-            return false;
+            return EAFManager.Instance.RegisterSpawnableAi(typeof(CustomCougar), CustomCougar.CustomCougarSettings, "Improved Cougar");
         }
 
         public override void OnUpdate()

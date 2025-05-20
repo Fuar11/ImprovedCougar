@@ -14,9 +14,11 @@ namespace ImprovedCougar
     internal class CustomCougar : BaseCougar
     {
 
+        internal static BaseCougarSettings CustomCougarSettings = new BaseCougarSettings();
+
         private enum CustomCougarAiMode : int
         {
-            Hide = (int)AiMode.Disabled + 1,
+            Hide = AiMode.Disabled + 1,
             COUNT
         }
 
