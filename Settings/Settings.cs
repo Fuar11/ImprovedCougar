@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ExpandedAiFramework;
 
 namespace ImprovedCougar.Settings
 {
-    internal class Settings : JsonModSettings
+    internal class Settings : JsonModSettings, ExpandedAiFramework.ISpawnTypePickerCandidate
     {
 
         [Section("Cougar Attributes")]
@@ -31,6 +32,8 @@ namespace ImprovedCougar.Settings
         [Description("Reveal cougar territory and surrounding area on the map.")]
         public bool showTerritory = false;
 
+        bool ISpawnTypePickerCandidate.CanSpawn(BaseAi baseAi) => baseAi.m_AiSubType == AiSubType.Cougar;
+        int ISpawnTypePickerCandidate.SpawnWeight() => 10000;
     }
 
     internal static class CustomSettings
@@ -38,10 +41,11 @@ namespace ImprovedCougar.Settings
 
         internal static readonly Settings settings = new Settings();
 
+        /**
         public static void OnLoad()
         {
             settings.AddToModSettings("Improved Cougar", MenuType.Both); 
         }
-
+        **/
     }
 }

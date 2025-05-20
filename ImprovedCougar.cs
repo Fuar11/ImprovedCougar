@@ -11,12 +11,14 @@ namespace ImprovedCougar
         public override void OnInitializeMelon()
         {
             Logger.Log("Improved Cougar is online", FlaggedLoggingLevel.Always);
-            Settings.CustomSettings.OnLoad();
+            CustomCougar.CustomCougarSettings.AddToModSettings("Improved Cougar", MenuType.Both);
+            //Settings.CustomSettings.OnLoad();
         }
 
         protected bool Initialize()
         {
-            return EAFManager.Instance.RegisterSpawnableAi(typeof(CustomCougar), CustomCougar.CustomCougarSettings, "Improved Cougar");
+            //CustomCougar.CustomCougarSettings.AddToModSettings("Improved Cougar", MenuType.Both);
+            return EAFManager.Instance.RegisterSpawnableAi(typeof(CustomCougar), CustomCougar.CustomCougarSettings);
         }
 
         public override void OnUpdate()

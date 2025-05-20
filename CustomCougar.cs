@@ -11,11 +11,11 @@ using Il2CppRewired;
 
 namespace ImprovedCougar
 {
+    [RegisterTypeInIl2Cpp]
     internal class CustomCougar : BaseCougar
     {
 
-        internal static BaseCougarSettings CustomCougarSettings = new BaseCougarSettings();
-
+        internal static Settings.Settings CustomCougarSettings = new Settings.Settings();
         private enum CustomCougarAiMode : int
         {
             Hide = AiMode.Disabled + 1,
