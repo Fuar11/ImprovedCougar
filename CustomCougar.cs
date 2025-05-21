@@ -40,8 +40,7 @@ namespace ImprovedCougar
         protected override bool ProcessCustom()
         {
 
-            Main.Logger.Log("Processing custom cougar logic", ComplexLogger.FlaggedLoggingLevel.Debug);
-
+            //Main.Logger.Log("Processing custom cougar logic", ComplexLogger.FlaggedLoggingLevel.Debug);
 
             switch (CurrentMode)
             {
@@ -63,14 +62,21 @@ namespace ImprovedCougar
 
             Main.Logger.Log("Cougar is stalking player, processing...", ComplexLogger.FlaggedLoggingLevel.Debug);
 
-            if (AiUtils.PositionVisible(mBaseAi.GetEyePos(), cougar.forward, mBaseAi.m_CurrentTarget.GetEyePos(), 100f, mBaseAi.m_DetectionFOV, 0f, Utils.m_PhysicalCollisionLayerMask))
+            if (IsPlayerFacingCougar(player, cougar)) //this works
             {
-                Main.Logger.Log("Cougar can see player. Getting to cover.", ComplexLogger.FlaggedLoggingLevel.Debug);
-                InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar has seen player!");
-                //cougar needs to quickly get into cover to hide
+                //player is looking at cougar
+                Main.Logger.Log("Player has faced the cougar direction.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Player has turned towards cougar.");
 
-                //change state here  
-                SetAiMode((AiMode)CustomCougarAiMode.Hide);
+                if (AiUtils.PositionVisible(mBaseAi.GetEyePos(), cougar.forward, mBaseAi.m_CurrentTarget.GetEyePos(), 100f, mBaseAi.m_DetectionFOV, 0f, Utils.m_PhysicalCollisionLayerMask))
+                {
+                    Main.Logger.Log("Cougar can see player and player is looking. Getting to cover.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar can see player looking!");
+                    //cougar needs to quickly get into cover to hide
+
+                    //change state here  
+                    SetAiMode((AiMode)CustomCougarAiMode.Hide);
+                }
             }
         }
 
@@ -81,14 +87,25 @@ namespace ImprovedCougar
 
             //check player distance, if it gets too close to a hiding cougar it can despawn and move to a more advantageous position
 
-            if (!AiUtils.PositionVisible(mBaseAi.GetEyePos(), cougar.forward, mBaseAi.m_CurrentTarget.GetEyePos(), 100f, mBaseAi.m_DetectionFOV, 0f, Utils.m_PhysicalCollisionLayerMask))
+            Main.Logger.Log("Cougar is hiding! Sneaky boi", ComplexLogger.FlaggedLoggingLevel.Debug);
+
+            if (!IsPlayerFacingCougar(player, cougar)) //this works
             {
-                //cougar can come out and keep pursuing the player
+                //player is NOT looking at cougar
+                Main.Logger.Log("Player has faced away from the cougar direction.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Player has turned away from the cougar.");
 
-                //change state here  
-                SetAiMode(AiMode.Stalking);
+                if (!AiUtils.PositionVisible(mBaseAi.GetEyePos(), cougar.forward, mBaseAi.m_CurrentTarget.GetEyePos(), 100f, mBaseAi.m_DetectionFOV, 0f, Utils.m_PhysicalCollisionLayerMask))
+                {
+
+                    Main.Logger.Log("Cougar is hiding and cannot see the player.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar cannot see the player.");
+                    //cougar can come out and keep pursuing the player
+
+                    //change state here  
+                    SetAiMode(AiMode.Stalking);
+                }
             }
-
         }
 
         protected void BeginStalking()
@@ -99,8 +116,8 @@ namespace ImprovedCougar
             //do something to make the Cougar shut up here
 
             mBaseAi.MoveAgentStop();
-            mBaseAi.ClearTarget();
-            mBaseAi.StartPath(player.transform.position, mBaseAi.m_StalkSpeed);
+            mBaseAi.m_CurrentTarget = GameManager.GetPlayerManagerComponent().m_AiTarget;
+            mBaseAi.StartPath(player.position, mBaseAi.m_StalkSpeed);
             Main.Logger.Log("Cougar is stalking player", ComplexLogger.FlaggedLoggingLevel.Debug);
             InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is stalking player!");
         }
@@ -111,12 +128,15 @@ namespace ImprovedCougar
             Transform cougar = mBaseAi.transform;
 
             mBaseAi.MoveAgentStop();
-            mBaseAi.ClearTarget();
+            //mBaseAi.ClearTarget(); 
 
             Vector3? coverPosition = FindNearestCover(cougar, player, 30f, Utils.m_PhysicalCollisionLayerMask);
 
             if (coverPosition != null)
             {
+
+                Main.Logger.Log($"Cover position found: {coverPosition.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+
                 mBaseAi.StartPath((Vector3)coverPosition, mBaseAi.m_ChasePlayerSpeed);
                 Main.Logger.Log("Moving towards cover", ComplexLogger.FlaggedLoggingLevel.Debug);
                 InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is moving to cover!");
@@ -179,6 +199,10 @@ namespace ImprovedCougar
                 case (AiMode)CustomCougarAiMode.Hide:
                     LogVerbose($"EnterAiModeCustom: mode is {mode}, routing to BeginHiding");
                     BeginHiding();
+                    return false;
+                case AiMode.Stalking:
+                    LogVerbose($"EnterAiModeCustom: mode is {mode}, routing to BeginStalking");
+                    BeginStalking();
                     return false;
                 default:
                     LogVerbose($"EnterAiModeCustom: mode is {mode}, deferring.");
