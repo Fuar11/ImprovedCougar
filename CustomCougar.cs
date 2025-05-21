@@ -210,14 +210,28 @@ namespace ImprovedCougar
             }
         }
 
+        protected override bool IsMoveStateCustom(AiMode mode, out bool isMoveState)
+        {
+            switch (mode)
+            {
+                case (AiMode)CustomCougarAiMode.Hide:
+                    LogVerbose($"IsMoveStateCustom: mode is {mode}, setting isMoveState true.");
+                    isMoveState = true;
+                    return false;
+                default:
+                    LogVerbose($"IsMoveStateCustom: mode is {mode}, deferring.");
+                    isMoveState = false;
+                    return true;
+            }
+        }
 
         protected override bool GetAiAnimationStateCustom(AiMode mode, out AiAnimationState overrideState)
         {
             switch (mode)
             {
                 case (AiMode)CustomCougarAiMode.Hide:
-                    LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, setting overrideState to Paused.");
-                    overrideState = AiAnimationState.Paused;
+                    LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, setting overrideState to Stalking.");
+                    overrideState = AiAnimationState.Stalking;
                     return false;
                 default:
                     LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, deffering");
