@@ -60,13 +60,11 @@ namespace ImprovedCougar
             Transform player = GameManager.GetPlayerTransform();
             Transform cougar = mBaseAi.transform;
 
-            Main.Logger.Log("Cougar is stalking player, processing...", ComplexLogger.FlaggedLoggingLevel.Debug);
+            //Main.Logger.Log("Cougar is stalking player, processing...", ComplexLogger.FlaggedLoggingLevel.Debug);
 
             if (IsPlayerFacingCougar(player, cougar)) //this works
             {
                 //player is looking at cougar
-                Main.Logger.Log("Player has faced the cougar direction.", ComplexLogger.FlaggedLoggingLevel.Debug);
-                InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Player has turned towards cougar.");
 
                 if (AiUtils.PositionVisible(mBaseAi.GetEyePos(), cougar.forward, mBaseAi.m_CurrentTarget.GetEyePos(), 100f, mBaseAi.m_DetectionFOV, 0f, Utils.m_PhysicalCollisionLayerMask))
                 {
@@ -87,24 +85,18 @@ namespace ImprovedCougar
 
             //check player distance, if it gets too close to a hiding cougar it can despawn and move to a more advantageous position
 
-            Main.Logger.Log("Cougar is hiding! Sneaky boi", ComplexLogger.FlaggedLoggingLevel.Debug);
+            //Main.Logger.Log("Cougar is hiding! Sneaky boi", ComplexLogger.FlaggedLoggingLevel.Debug);
 
             if (!IsPlayerFacingCougar(player, cougar)) //this works
             {
                 //player is NOT looking at cougar
-                Main.Logger.Log("Player has faced away from the cougar direction.", ComplexLogger.FlaggedLoggingLevel.Debug);
-                InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Player has turned away from the cougar.");
 
-                if (!AiUtils.PositionVisible(mBaseAi.GetEyePos(), cougar.forward, mBaseAi.m_CurrentTarget.GetEyePos(), 100f, mBaseAi.m_DetectionFOV, 0f, Utils.m_PhysicalCollisionLayerMask))
-                {
-
-                    Main.Logger.Log("Cougar is hiding and cannot see the player.", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar cannot see the player.");
+                    Main.Logger.Log("Cougar is hiding and player is not looking. Continuing to stalk...", ComplexLogger.FlaggedLoggingLevel.Debug);
                     //cougar can come out and keep pursuing the player
 
                     //change state here  
                     SetAiMode(AiMode.Stalking);
-                }
+                
             }
         }
 
@@ -126,6 +118,8 @@ namespace ImprovedCougar
         {
             Transform player = GameManager.GetPlayerTransform();
             Transform cougar = mBaseAi.transform;
+
+            Main.Logger.Log("Cougar is hiding", ComplexLogger.FlaggedLoggingLevel.Debug);
 
             mBaseAi.MoveAgentStop();
             //mBaseAi.ClearTarget(); 
@@ -158,6 +152,7 @@ namespace ImprovedCougar
 
         public Vector3? FindNearestCover(Transform cougar, Transform player, float searchRadius, LayerMask coverObstructionMask)
         {
+            HashSet<Collider> cougarColliders = new HashSet<Collider>(cougar.GetComponentsInChildren<Collider>());
             Collider[] nearbyObjects = Physics.OverlapSphere(cougar.position, searchRadius, coverObstructionMask);
             Vector3 cougarEye = mBaseAi.GetEyePos();
             Vector3 playerEye = mBaseAi.m_CurrentTarget.GetEyePos();
@@ -167,15 +162,33 @@ namespace ImprovedCougar
 
             foreach (Collider col in nearbyObjects)
             {
-                // Get the closest point on this object to the cougar
+                // Get the closest point on this collider to the cougar
+
+                if (cougarColliders.Contains(col))
+                    continue;
+
+                if (col.bounds.Contains(cougar.position))
+                    continue;
+
+                Main.Logger.Log($"Cougar position: {cougar.position.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+
                 Vector3 coverPoint = col.ClosestPoint(cougar.position);
 
+                if (Vector3.Distance(coverPoint, cougar.position) < 1.0f)
+                    continue;
+
+                //check if position is behind cougar or not
+                Vector3 dirToCover = (coverPoint - cougar.position).normalized;
+                float dot = Vector3.Dot(cougar.forward, dirToCover);
+                if (dot < 0.3f)
+                    continue;
+
                 // Test if the player can see that point
-                Vector3 dirToCover = coverPoint - playerEye;
+                Vector3 dirToCoverFromPlayer = coverPoint - playerEye;
                 float distToCover = dirToCover.magnitude;
 
                 // If the first hit is this collider, it blocks line of sight
-                if (Physics.Raycast(playerEye, dirToCover.normalized, out RaycastHit hit, distToCover, coverObstructionMask))
+                if (Physics.Raycast(playerEye, dirToCoverFromPlayer.normalized, out RaycastHit hit, distToCover, coverObstructionMask))
                 {
                     if (hit.collider == col)
                     {
