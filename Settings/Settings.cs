@@ -33,6 +33,8 @@ namespace ImprovedCougar.Settings
         public bool showTerritory = false;
 
         [Section("Debug")]
+
+        [Name("Debug Features")]
         [Description("Activate debug features.")]
         public bool debug = false;
 

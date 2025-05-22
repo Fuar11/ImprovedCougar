@@ -129,6 +129,7 @@ namespace ImprovedCougar
                 SetAiMode(AiMode.Stalking);
 
             }
+            //else we need something that prevents the player from trapping the cougar behind cover indefinitely, teleport maybe?
         }
 
         protected void BeginStalking()
@@ -234,9 +235,15 @@ namespace ImprovedCougar
 
                 // Get a point behind the collider (relative to the player)
                 Vector3 dirFromPlayer = (bestCollider.bounds.center - playerEye).normalized;
-                Vector3 initialCoverPoint = bestCollider.bounds.center + dirFromPlayer * bestCollider.bounds.extents.magnitude * 0.2f;
+                Vector3 initialCoverPoint = bestCollider.bounds.center + dirFromPlayer * bestCollider.bounds.extents.magnitude * 0.25f;
 
                 DebugTools.CreateDebugMarker(initialCoverPoint, Color.red);
+
+                Vector3? finalCoverPoint = ForcePointToGround(initialCoverPoint, bestCollider, 25f, 2f, coverObstructionMask);
+
+                return finalCoverPoint != initialCoverPoint ? finalCoverPoint : initialCoverPoint;
+
+                /***
 
                 //checks to see if it can lower the point to the ground, since sometimes it's too high for the cougar to reach
                 if (Physics.Raycast(initialCoverPoint, Vector3.down, out RaycastHit groundHit, 10f))
@@ -257,16 +264,46 @@ namespace ImprovedCougar
                     if (Physics.Raycast(forcedDownPoint, Vector3.down, out RaycastHit groundHit2, 10f))
                     {
                         Vector3 groundedPoint = groundHit2.point;
+
+                        
+
                         Main.Logger.Log($"To ground raycast 2 hit! Found point {groundedPoint.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
                         DebugTools.CreateDebugMarker(groundedPoint, Color.green);
                         return groundedPoint;
                     }
+                } ***/
 
-                }
-
-                return initialCoverPoint;
+                //return initialCoverPoint;
             }
 
+            return null;
+        }
+
+        public Vector3? ForcePointToGround(Vector3 startPoint, Collider excludedCollider, float maxDrop = 10f, float stepSize = 0.5f, LayerMask groundMask = default)
+        {
+            float totalDrop = 0f;
+            Vector3 probePoint = startPoint;
+
+            while (totalDrop < maxDrop)
+            {
+                // Check straight down from current probe point
+                if (Physics.Raycast(probePoint, Vector3.down, out RaycastHit hit, stepSize, groundMask))
+                {
+                    if (hit.collider != excludedCollider)
+                    {
+                        Main.Logger.Log($"To ground raycast hit! Found point {hit.point.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                        DebugTools.CreateDebugMarker(hit.point, Color.green);
+                        // Found valid ground!
+                        return hit.point;
+                    }
+                }
+
+                // Move probe point down and try again
+                probePoint.y -= stepSize;
+                totalDrop += stepSize;
+            }
+
+            // Nothing found within drop range
             return null;
         }
 
