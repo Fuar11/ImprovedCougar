@@ -91,12 +91,12 @@ namespace ImprovedCougar
             {
                 //player is NOT looking at cougar
 
-                    Main.Logger.Log("Cougar is hiding and player is not looking. Continuing to stalk...", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    //cougar can come out and keep pursuing the player
+                Main.Logger.Log("Cougar is hiding and player is not looking. Continuing to stalk...", ComplexLogger.FlaggedLoggingLevel.Debug);
+                //cougar can come out and keep pursuing the player
 
-                    //change state here  
-                    SetAiMode(AiMode.Stalking);
-                
+                //change state here  
+                SetAiMode(AiMode.Stalking);
+
             }
         }
 
@@ -124,7 +124,7 @@ namespace ImprovedCougar
             mBaseAi.MoveAgentStop();
             //mBaseAi.ClearTarget(); 
 
-            Vector3? coverPosition = FindNearestCover(cougar, player, 30f, Utils.m_PhysicalCollisionLayerMask);
+            Vector3? coverPosition = FindNearestCover(cougar, player, 80f, Utils.m_PhysicalCollisionLayerMask);
 
             if (coverPosition != null)
             {
@@ -156,9 +156,12 @@ namespace ImprovedCougar
             Collider[] nearbyObjects = Physics.OverlapSphere(cougar.position, searchRadius, coverObstructionMask);
             Vector3 cougarEye = mBaseAi.GetEyePos();
             Vector3 playerEye = mBaseAi.m_CurrentTarget.GetEyePos();
+            float cougarHeight = GetCougarHeight(cougar);
 
             Vector3? bestPosition = null;
             float closestDistance = Mathf.Infinity;
+
+            Main.Logger.Log($"Cougar position: {cougar.position.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
             foreach (Collider col in nearbyObjects)
             {
@@ -170,12 +173,18 @@ namespace ImprovedCougar
                 if (col.bounds.Contains(cougar.position))
                     continue;
 
-                Main.Logger.Log($"Cougar position: {cougar.position.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
-
                 Vector3 coverPoint = col.ClosestPoint(cougar.position);
+
+                Main.Logger.Log($"Cover point {coverPoint.ToString()} found", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                 if (Vector3.Distance(coverPoint, cougar.position) < 1.0f)
                     continue;
+
+                //Main.Logger.Log("Cover is far enough from cougar", ComplexLogger.FlaggedLoggingLevel.Debug);
+
+                if (col.bounds.size.y < cougarHeight) continue;
+
+                //Main.Logger.Log("Cover is high enough for cougar", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                 //check if position is behind cougar or not
                 Vector3 dirToCover = (coverPoint - cougar.position).normalized;
@@ -183,15 +192,23 @@ namespace ImprovedCougar
                 if (dot < 0.3f)
                     continue;
 
+                //Main.Logger.Log("Cover is in front of cougar", ComplexLogger.FlaggedLoggingLevel.Debug);
+
                 // Test if the player can see that point
                 Vector3 dirToCoverFromPlayer = coverPoint - playerEye;
-                float distToCover = dirToCover.magnitude;
+                float distToCover = dirToCoverFromPlayer.magnitude;
 
                 // If the first hit is this collider, it blocks line of sight
                 if (Physics.Raycast(playerEye, dirToCoverFromPlayer.normalized, out RaycastHit hit, distToCover, coverObstructionMask))
                 {
+
+                    //Main.Logger.Log("Raycast", ComplexLogger.FlaggedLoggingLevel.Debug);
+
                     if (hit.collider == col)
                     {
+
+                        //Main.Logger.Log("Raycast hit", ComplexLogger.FlaggedLoggingLevel.Debug);
+
                         float distToCougar = Vector3.Distance(cougar.position, coverPoint);
                         if (distToCougar < closestDistance)
                         {
@@ -253,6 +270,18 @@ namespace ImprovedCougar
             }
         }
 
+        float GetCougarHeight(Transform cougar)
+        {
+            Renderer[] renderers = cougar.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0)
+                return 0f;
+
+            Bounds combinedBounds = renderers[0].bounds;
+            foreach (Renderer r in renderers)
+                combinedBounds.Encapsulate(r.bounds);
+
+            return combinedBounds.size.y;
+        }
 
     }
 }
