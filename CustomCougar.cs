@@ -8,6 +8,7 @@ using ExpandedAiFramework;
 using Il2CppTLD.AI;
 using UnityEngine;
 using Il2CppRewired;
+using Il2CppTMPro;
 
 namespace ImprovedCougar
 {
@@ -29,6 +30,7 @@ namespace ImprovedCougar
         protected override float m_MinWaypointDistance { get { return 100.0f; } }
         protected override float m_MaxWaypointDistance { get { return 1000.0f; } }
 
+        private const float followDistance = 10f; //for now
         public override void Initialize(BaseAi ai, TimeOfDay timeOfDay, SpawnRegion spawnRegion)
         {
             base.Initialize(ai, timeOfDay, spawnRegion);
@@ -62,6 +64,7 @@ namespace ImprovedCougar
 
             //Main.Logger.Log("Cougar is stalking player, processing...", ComplexLogger.FlaggedLoggingLevel.Debug);
 
+
             if (IsPlayerFacingCougar(player, cougar)) //this works
             {
                 //player is looking at cougar
@@ -78,7 +81,31 @@ namespace ImprovedCougar
             }
             else
             {
-               
+
+                Vector3 playerPosition = player.position; //uses curr player position
+                Vector3 currentCougarPosition = cougar.position;
+                float currentDistance = Vector3.Distance(currentCougarPosition, playerPosition);
+
+                if (currentDistance >= followDistance)
+                {
+
+                    Vector3 followDirection = (currentCougarPosition - playerPosition).normalized;
+                    Vector3 rawFollowPosition = playerPosition + followDirection * (followDistance * 0.80f);
+                    AiUtils.GetClosestNavmeshPos(out Vector3 followPosition, rawFollowPosition, rawFollowPosition);
+
+                    //maybe check if it can reach the player here
+
+                    //keep following player
+                    mBaseAi.StartPath(player.position, mBaseAi.m_StalkSpeed);
+
+                }
+                else
+                {
+                    Main.Logger.Log("Cougar has reached attack distance", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    //set mode to attack and go nuts
+                }
+
+
             }
         }
 
@@ -113,7 +140,7 @@ namespace ImprovedCougar
 
             mBaseAi.MoveAgentStop();
             mBaseAi.m_CurrentTarget = GameManager.GetPlayerManagerComponent().m_AiTarget;
-            mBaseAi.StartPath(player.position, mBaseAi.m_StalkSpeed);
+            //mBaseAi.StartPath(player.position, mBaseAi.m_StalkSpeed);
             Main.Logger.Log("Cougar is stalking player", ComplexLogger.FlaggedLoggingLevel.Debug);
             InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is stalking player!");
         }
@@ -128,7 +155,7 @@ namespace ImprovedCougar
             mBaseAi.MoveAgentStop();
             //mBaseAi.ClearTarget(); 
 
-            Vector3? coverPosition = FindNearestTrueCover(cougar, player, 80f, Utils.m_PhysicalCollisionLayerMask);
+            Vector3? coverPosition = FindNearestCover(cougar, player, 80f, Utils.m_PhysicalCollisionLayerMask);
 
             if (coverPosition != null)
             {
@@ -154,81 +181,10 @@ namespace ImprovedCougar
             return angle <= 45f;
         }
 
-        //this method doesn't work too well. The cougar will go to cover but it won't go behind cover relative to the player. It'll usually bash it's head into a tree
-        public Vector3? FindNearestCover(Transform cougar, Transform player, float searchRadius, LayerMask coverObstructionMask)
-        {
-            HashSet<Collider> cougarColliders = new HashSet<Collider>(cougar.GetComponentsInChildren<Collider>());
-            Collider[] nearbyObjects = Physics.OverlapSphere(cougar.position, searchRadius, coverObstructionMask);
-            Vector3 cougarEye = mBaseAi.GetEyePos();
-            Vector3 playerEye = mBaseAi.m_CurrentTarget.GetEyePos();
-            float cougarHeight = GetCougarHeight(cougar);
-
-            Vector3? bestPosition = null;
-            float closestDistance = Mathf.Infinity;
-
-            Main.Logger.Log($"Cougar position: {cougar.position.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
-
-            foreach (Collider col in nearbyObjects)
-            {
-                // Get the closest point on this collider to the cougar
-
-                if (cougarColliders.Contains(col))
-                    continue;
-
-                if (col.bounds.Contains(cougar.position))
-                    continue;
-
-                Vector3 coverPoint = col.ClosestPoint(cougar.position);
-
-                Main.Logger.Log($"Cover point {coverPoint.ToString()} found", ComplexLogger.FlaggedLoggingLevel.Debug);
-
-                if (Vector3.Distance(coverPoint, cougar.position) < 1.0f)
-                    continue;
-
-                //Main.Logger.Log("Cover is far enough from cougar", ComplexLogger.FlaggedLoggingLevel.Debug);
-
-                if (col.bounds.size.y < cougarHeight) continue;
-
-                //Main.Logger.Log("Cover is high enough for cougar", ComplexLogger.FlaggedLoggingLevel.Debug);
-
-                //check if position is behind cougar or not
-                Vector3 dirToCover = (coverPoint - cougar.position).normalized;
-                float dot = Vector3.Dot(cougar.forward, dirToCover);
-                if (dot < 0.3f)
-                    continue;
-
-                //Main.Logger.Log("Cover is in front of cougar", ComplexLogger.FlaggedLoggingLevel.Debug);
-
-                // Test if the player can see that point
-                Vector3 dirToCoverFromPlayer = coverPoint - playerEye;
-                float distToCover = dirToCoverFromPlayer.magnitude;
-
-                // If the first hit is this collider, it blocks line of sight
-                if (Physics.Raycast(playerEye, dirToCoverFromPlayer.normalized, out RaycastHit hit, distToCover, coverObstructionMask))
-                {
-
-                    //Main.Logger.Log("Raycast", ComplexLogger.FlaggedLoggingLevel.Debug);
-
-                    if (hit.collider == col)
-                    {
-
-                        //Main.Logger.Log("Raycast hit", ComplexLogger.FlaggedLoggingLevel.Debug);
-
-                        float distToCougar = Vector3.Distance(cougar.position, coverPoint);
-                        if (distToCougar < closestDistance)
-                        {
-                            closestDistance = distToCougar;
-                            bestPosition = coverPoint;
-                        }
-                    }
-                }
-            }
-
-            return bestPosition; // Returns null if nothing found
-        }
+        
 
         //this method works a lot better. The cougar will go to the opposite side of the cover object and truly hide from the player. But it'll often go backwards to do it which looks a little goofy
-        public Vector3? FindNearestTrueCover(Transform cougar, Transform player, float searchRadius, LayerMask coverObstructionMask)
+        public Vector3? FindNearestCover(Transform cougar, Transform player, float searchRadius, LayerMask coverObstructionMask)
         {
             HashSet<Collider> cougarColliders = new HashSet<Collider>(cougar.GetComponentsInChildren<Collider>());
             Collider[] nearbyObjects = Physics.OverlapSphere(cougar.position, searchRadius, coverObstructionMask);
@@ -273,11 +229,42 @@ namespace ImprovedCougar
 
             if (bestCollider != null)
             {
+
+                DebugTools.HighlightColliderBounds(bestCollider);
+
                 // Get a point behind the collider (relative to the player)
                 Vector3 dirFromPlayer = (bestCollider.bounds.center - playerEye).normalized;
-                Vector3 coverPoint = bestCollider.bounds.center + dirFromPlayer * bestCollider.bounds.extents.magnitude * 0.9f;
+                Vector3 initialCoverPoint = bestCollider.bounds.center + dirFromPlayer * bestCollider.bounds.extents.magnitude * 0.2f;
 
-                return coverPoint;
+                DebugTools.CreateDebugMarker(initialCoverPoint, Color.red);
+
+                //checks to see if it can lower the point to the ground, since sometimes it's too high for the cougar to reach
+                if (Physics.Raycast(initialCoverPoint, Vector3.down, out RaycastHit groundHit, 10f))
+                {
+                    Vector3 groundedPoint = groundHit.point;
+                    Main.Logger.Log($"To ground raycast hit! Found point {groundedPoint.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    DebugTools.CreateDebugMarker(groundedPoint, Color.green);
+                    return groundedPoint;
+                }
+                else
+                {
+
+                    Vector3 forcedDownPoint = initialCoverPoint;
+                    forcedDownPoint.y -= 15.0f; // Drop it by a lot to get below any branches and other blocking objects
+
+                    DebugTools.CreateDebugMarker(forcedDownPoint, Color.magenta);
+
+                    if (Physics.Raycast(forcedDownPoint, Vector3.down, out RaycastHit groundHit2, 10f))
+                    {
+                        Vector3 groundedPoint = groundHit2.point;
+                        Main.Logger.Log($"To ground raycast 2 hit! Found point {groundedPoint.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                        DebugTools.CreateDebugMarker(groundedPoint, Color.green);
+                        return groundedPoint;
+                    }
+
+                }
+
+                return initialCoverPoint;
             }
 
             return null;
@@ -343,6 +330,8 @@ namespace ImprovedCougar
 
             return combinedBounds.size.y;
         }
+
+        
 
     }
 }

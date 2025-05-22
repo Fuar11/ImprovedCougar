@@ -32,6 +32,10 @@ namespace ImprovedCougar.Settings
         [Description("Reveal cougar territory and surrounding area on the map.")]
         public bool showTerritory = false;
 
+        [Section("Debug")]
+        [Description("Activate debug features.")]
+        public bool debug = false;
+
         bool ISpawnTypePickerCandidate.CanSpawn(BaseAi baseAi) => baseAi.m_AiSubType == AiSubType.Cougar;
         int ISpawnTypePickerCandidate.SpawnWeight() => 10000;
     }
