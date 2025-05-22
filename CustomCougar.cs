@@ -76,6 +76,10 @@ namespace ImprovedCougar
                     SetAiMode((AiMode)CustomCougarAiMode.Hide);
                 }
             }
+            else
+            {
+               
+            }
         }
 
         protected void ProcessHiding()
@@ -124,7 +128,7 @@ namespace ImprovedCougar
             mBaseAi.MoveAgentStop();
             //mBaseAi.ClearTarget(); 
 
-            Vector3? coverPosition = FindNearestCover(cougar, player, 80f, Utils.m_PhysicalCollisionLayerMask);
+            Vector3? coverPosition = FindNearestTrueCover(cougar, player, 80f, Utils.m_PhysicalCollisionLayerMask);
 
             if (coverPosition != null)
             {
@@ -150,6 +154,7 @@ namespace ImprovedCougar
             return angle <= 45f;
         }
 
+        //this method doesn't work too well. The cougar will go to cover but it won't go behind cover relative to the player. It'll usually bash it's head into a tree
         public Vector3? FindNearestCover(Transform cougar, Transform player, float searchRadius, LayerMask coverObstructionMask)
         {
             HashSet<Collider> cougarColliders = new HashSet<Collider>(cougar.GetComponentsInChildren<Collider>());
@@ -220,6 +225,62 @@ namespace ImprovedCougar
             }
 
             return bestPosition; // Returns null if nothing found
+        }
+
+        //this method works a lot better. The cougar will go to the opposite side of the cover object and truly hide from the player. But it'll often go backwards to do it which looks a little goofy
+        public Vector3? FindNearestTrueCover(Transform cougar, Transform player, float searchRadius, LayerMask coverObstructionMask)
+        {
+            HashSet<Collider> cougarColliders = new HashSet<Collider>(cougar.GetComponentsInChildren<Collider>());
+            Collider[] nearbyObjects = Physics.OverlapSphere(cougar.position, searchRadius, coverObstructionMask);
+            Vector3 cougarEye = mBaseAi.GetEyePos();
+            Vector3 playerEye = mBaseAi.m_CurrentTarget.GetEyePos();
+            float cougarHeight = GetCougarHeight(cougar);
+
+            Collider bestCollider = null;
+            float closestDistance = Mathf.Infinity;
+
+            Main.Logger.Log($"Cougar position: {cougar.position.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+
+            foreach (Collider col in nearbyObjects)
+            {
+                // Get the closest collider to the cougar
+
+                if (cougarColliders.Contains(col))
+                    continue;
+
+                if (col.bounds.Contains(cougar.position))
+                    continue;
+
+                if (col.bounds.size.y < cougarHeight) continue;
+
+
+                Vector3 dirToCollider = (col.bounds.center - playerEye).normalized;
+                float distanceToCollider = Vector3.Distance(playerEye, col.bounds.center);
+
+                if (Physics.Raycast(playerEye, dirToCollider, out RaycastHit hit, distanceToCollider, coverObstructionMask))
+                {
+                    if (hit.collider == col)
+                    {
+                        float distanceToCougar = Vector3.Distance(cougar.position, col.bounds.center);
+                        if (distanceToCougar < closestDistance)
+                        {
+                            closestDistance = distanceToCougar;
+                            bestCollider = col;
+                        }
+                    }
+                }
+            }
+
+            if (bestCollider != null)
+            {
+                // Get a point behind the collider (relative to the player)
+                Vector3 dirFromPlayer = (bestCollider.bounds.center - playerEye).normalized;
+                Vector3 coverPoint = bestCollider.bounds.center + dirFromPlayer * bestCollider.bounds.extents.magnitude * 0.9f;
+
+                return coverPoint;
+            }
+
+            return null;
         }
 
         protected override bool EnterAiModeCustom(AiMode mode)
