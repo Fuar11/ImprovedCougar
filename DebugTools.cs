@@ -12,6 +12,9 @@ namespace ImprovedCougar
 
         public static void CreateDebugMarker(Vector3 position, Color color)
         {
+
+            if (Settings.CustomSettings.settings.debug == false) return;
+
             GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             marker.transform.position = position;
             marker.transform.localScale = Vector3.one * 0.3f;
@@ -30,6 +33,9 @@ namespace ImprovedCougar
 
         public static void HighlightColliderBounds(Collider col)
         {
+
+            if (Settings.CustomSettings.settings.debug == false) return;
+
             GameObject box = GameObject.CreatePrimitive(PrimitiveType.Cube);
             box.transform.position = col.bounds.center;
             box.transform.localScale = col.bounds.size;
