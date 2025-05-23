@@ -31,6 +31,9 @@ namespace ImprovedCougar
         protected override float m_MaxWaypointDistance { get { return 1000.0f; } }
 
         private const float followDistance = 10f; //for now
+
+        private Vector3? coverPosition = null;
+
         public override void Initialize(BaseAi ai, TimeOfDay timeOfDay, SpawnRegion spawnRegion)
         {
             base.Initialize(ai, timeOfDay, spawnRegion);
@@ -75,8 +78,16 @@ namespace ImprovedCougar
                     InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar can see player looking!");
                     //cougar needs to quickly get into cover to hide
 
-                    //change state here  
-                    SetAiMode((AiMode)CustomCougarAiMode.Hide);
+                    coverPosition = FindNearestCover(cougar, player, 80f, Utils.m_PhysicalCollisionLayerMask);
+
+                    if (coverPosition != null)
+                    {
+                        Main.Logger.Log($"Cover position found: {coverPosition.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+
+                        //change state here  
+                        SetAiMode((AiMode)CustomCougarAiMode.Hide);
+                    }
+                    else Main.Logger.Log("Cannot find cover position. Continue stalking...", ComplexLogger.FlaggedLoggingLevel.Error);
                 }
             }
             else
@@ -104,8 +115,6 @@ namespace ImprovedCougar
                     Main.Logger.Log("Cougar has reached attack distance", ComplexLogger.FlaggedLoggingLevel.Debug);
                     //set mode to attack and go nuts
                 }
-
-
             }
         }
 
@@ -116,7 +125,7 @@ namespace ImprovedCougar
 
             //check player distance, if it gets too close to a hiding cougar it can despawn and move to a more advantageous position
 
-            //Main.Logger.Log("Cougar is hiding! Sneaky boi", ComplexLogger.FlaggedLoggingLevel.Debug);
+            if (cougar.position == coverPosition) mBaseAi.MoveAgentStop();
 
             if (!IsPlayerFacingCougar(player, cougar)) //this works
             {
@@ -141,7 +150,6 @@ namespace ImprovedCougar
 
             mBaseAi.MoveAgentStop();
             mBaseAi.m_CurrentTarget = GameManager.GetPlayerManagerComponent().m_AiTarget;
-            //mBaseAi.StartPath(player.position, mBaseAi.m_StalkSpeed);
             Main.Logger.Log("Cougar is stalking player", ComplexLogger.FlaggedLoggingLevel.Debug);
             InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is stalking player!");
         }
@@ -151,23 +159,14 @@ namespace ImprovedCougar
             Transform player = GameManager.GetPlayerTransform();
             Transform cougar = mBaseAi.transform;
 
-            Main.Logger.Log("Cougar is hiding", ComplexLogger.FlaggedLoggingLevel.Debug);
-
             mBaseAi.MoveAgentStop();
             //mBaseAi.ClearTarget(); 
 
-            Vector3? coverPosition = FindNearestCover(cougar, player, 80f, Utils.m_PhysicalCollisionLayerMask);
+            //if we get here coverPosition MUST be true
+            mBaseAi.StartPath((Vector3)coverPosition, mBaseAi.m_ChasePlayerSpeed);
+            Main.Logger.Log("Moving towards cover", ComplexLogger.FlaggedLoggingLevel.Debug);
+            InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is moving to cover!");
 
-            if (coverPosition != null)
-            {
-
-                Main.Logger.Log($"Cover position found: {coverPosition.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
-
-                mBaseAi.StartPath((Vector3)coverPosition, mBaseAi.m_ChasePlayerSpeed);
-                Main.Logger.Log("Moving towards cover", ComplexLogger.FlaggedLoggingLevel.Debug);
-                InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is moving to cover!");
-            }
-            else Main.Logger.Log("Cannot find cover position", ComplexLogger.FlaggedLoggingLevel.Error);
         }
 
         //checks to see if the player is facing the cougar regardless of line of sight
@@ -182,7 +181,7 @@ namespace ImprovedCougar
             return angle <= 45f;
         }
 
-        
+
 
         //this method works a lot better. The cougar will go to the opposite side of the cover object and truly hide from the player. But it'll often go backwards to do it which looks a little goofy
         public Vector3? FindNearestCover(Transform cougar, Transform player, float searchRadius, LayerMask coverObstructionMask)
@@ -368,7 +367,7 @@ namespace ImprovedCougar
             return combinedBounds.size.y;
         }
 
-        
+
 
     }
 }
