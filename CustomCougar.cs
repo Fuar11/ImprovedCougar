@@ -10,6 +10,9 @@ using UnityEngine;
 using Il2CppRewired;
 using Il2CppTMPro;
 using UnityEngine.AI;
+using ImprovedCougar.Pathfinding;
+using System.Drawing;
+using Color = UnityEngine.Color;
 
 namespace ImprovedCougar
 {
@@ -97,17 +100,17 @@ namespace ImprovedCougar
                 if (timeSinceLastPath > recalcInterval)
                 {
                     Main.Logger.Log("Calculating path...", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    StartPathfinding();
+                    StartStalkingPathfinding();
                     timeSinceLastPath = 0f;
                 }
 
                 if (path != null && currentIndex < path.Count)
                 {
 
+                    //Main.Logger.Log($"Cougar distance to player: {currentDistance}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                     Vector3 target = path[currentIndex];
-                    Main.Logger.Log($"Moving to next point on path {target}", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    mBaseAi.StartPath(target, mBaseAi.m_StalkSpeed); 
+                    mBaseAi.StartPath(target, mBaseAi.m_StalkSpeed + 2); 
 
                     if (Vector3.Distance(cougar.position, target) < reachThreshold)
                     {
@@ -133,7 +136,9 @@ namespace ImprovedCougar
 
         }
 
-        protected void ProcessStalkingCustom()
+
+        /***
+        protected void ProcessStalkingBasic()
         {
             Transform player = GameManager.GetPlayerTransform();
             Transform cougar = mBaseAi.transform;
@@ -203,7 +208,7 @@ namespace ImprovedCougar
                     //attack!
                 }
             }
-        }
+        } ***/
 
         protected void ProcessHiding()
         {
@@ -238,9 +243,7 @@ namespace ImprovedCougar
             mBaseAi.MoveAgentStop();
             mBaseAi.m_CurrentTarget = GameManager.GetPlayerManagerComponent().m_AiTarget;
 
-            //coverPositions = FindAllNearbyCover(cougar, player, 50f, Utils.m_PhysicalCollisionLayerMask);
-
-            StartPathfinding();
+            StartStalkingPathfinding();
 
             Main.Logger.Log("Cougar is stalking player", ComplexLogger.FlaggedLoggingLevel.Debug);
             InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is stalking player!");
@@ -444,7 +447,6 @@ namespace ImprovedCougar
                 {
                     if (hit.collider != excludedCollider)
                     {
-                        Main.Logger.Log($"To ground raycast hit! Found point {hit.point.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
                         //DebugTools.CreateDebugMarker(hit.point, Color.green, debugDuration);
                         // Found valid ground!
                         return hit.point;
@@ -521,78 +523,7 @@ namespace ImprovedCougar
             return combinedBounds.size.y;
         }
 
-        float GetAStarPathCost(Vector3 from, Vector3 to)
-        {
-            NavMeshPath path = new NavMeshPath();
-            if (NavMesh.CalculatePath(from, to, NavMesh.AllAreas, path))
-            {
-                float cost = 0f;
-                for (int i = 1; i < path.corners.Length; i++)
-                {
-                    cost += Vector3.Distance(path.corners[i - 1], path.corners[i]);
-                }
-                return cost;
-            }
-            return Mathf.Infinity; // No valid path
-        }
-
-        List<Vector3> FindOptimalPath(Vector3 start, List<Vector3> coverPoints, Vector3 finalTarget)
-        {
-            List<Vector3> unvisited = new List<Vector3>(coverPoints);
-            List<Vector3> path = new List<Vector3>();
-            HashSet<Vector3> visited = new HashSet<Vector3>();
-            Vector3 current = start;
-
-            while (unvisited.Count > 0)
-            {
-                float bestScore = Mathf.Infinity;
-                Vector3 bestPoint = Vector3.zero;
-                int bestIndex = -1;
-
-                for (int i = 0; i < unvisited.Count; i++)
-                {
-                    Vector3 candidate = unvisited[i];
-                    float cost = GetAStarPathCost(current, candidate);
-
-                    // Penalize visited or reverse-direction moves
-                    if (visited.Contains(candidate))
-                        cost *= 2f; // discourage loops
-
-                    // Optional: prefer forward movement (not behind cougar)
-                    Vector3 toCandidate = (candidate - current).normalized;
-                    Vector3 toPlayer = (finalTarget - current).normalized;
-                    float directionDot = Vector3.Dot(toCandidate, toPlayer); // 1 = same direction, -1 = opposite
-
-                    if (directionDot < 0.2f)
-                        cost *= 1.5f; // penalize backward moves
-
-                    if (cost < bestScore)
-                    {
-                        bestScore = cost;
-                        bestPoint = candidate;
-                        bestIndex = i;
-                    }
-                }
-
-                if (bestIndex >= 0)
-                {
-                    path.Add(bestPoint);
-                    visited.Add(bestPoint);
-                    current = bestPoint;
-                    unvisited.RemoveAt(bestIndex);
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            path.Add(finalTarget);
-            return path;
-        }
-
-
-        private void StartPathfinding()
+        private void StartStalkingPathfinding()
         {
             Transform player = GameManager.GetPlayerTransform();
             Transform cougar = mBaseAi.transform;
@@ -600,15 +531,21 @@ namespace ImprovedCougar
             float dist = Vector3.Distance(player.position, cougar.position);
 
             List<Vector3> coverPoints = FindAllNearbyCover(cougar, player, dist, Utils.m_PhysicalCollisionLayerMask);
-            path = FindOptimalPath(transform.position, coverPoints, player.position);
+
+            foreach (Vector3 coverPoint in coverPoints)
+            {
+                if (coverPoint == player.position) break;
+                DebugTools.CreateDebugMarker(coverPoint, Color.red, 4f);
+            }
+
+            path = PathfindingFunctions.FindAStarPath(transform.position, coverPoints, player.position);
 
             if(path != null)
             {
                 foreach(Vector3 point in path)
                 {
-                    Main.Logger.Log(point.ToString(), ComplexLogger.FlaggedLoggingLevel.Debug);
                     if (point == player.position) break;
-                    DebugTools.CreateDebugMarker(point, Color.green, 4f);
+                    DebugTools.CreateDebugMarker(point, Color.green, 5f);
                 }
             }
 
