@@ -34,9 +34,17 @@ namespace ImprovedCougar.Settings
 
         [Section("Debug")]
 
-        [Name("Debug Features")]
-        [Description("Activate debug features.")]
-        public bool debug = false;
+        [Name("Points")]
+        [Description("Activate spheres when points are found.")]
+        public bool debugPoints = false;
+
+        [Name("Colliders")]
+        [Description("Activate collider bounds highlights.")]
+        public bool debugColliders = false;
+
+        [Name("Rays")]
+        [Description("Activate visualized raycasts.")]
+        public bool debugRays = false;
 
         bool ISpawnTypePickerCandidate.CanSpawn(BaseAi baseAi) => baseAi.m_AiSubType == AiSubType.Cougar;
         int ISpawnTypePickerCandidate.SpawnWeight() => 10000;

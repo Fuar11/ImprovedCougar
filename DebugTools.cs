@@ -10,10 +10,10 @@ namespace ImprovedCougar
     internal class DebugTools
     {
 
-        public static void CreateDebugMarker(Vector3 position, Color color)
+        public static void CreateDebugMarker(Vector3 position, Color color, float duration)
         {
 
-            if (Settings.CustomSettings.settings.debug == false) return;
+            if (Settings.CustomSettings.settings.debugPoints == false) return;
 
             GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             marker.transform.position = position;
@@ -28,13 +28,13 @@ namespace ImprovedCougar
             }
 
             // Auto-destroy after a few seconds
-            UnityEngine.Object.Destroy(marker, 10f);
+            UnityEngine.Object.Destroy(marker, duration);
         }
 
         public static void HighlightColliderBounds(Collider col)
         {
 
-            if (Settings.CustomSettings.settings.debug == false) return;
+            if (Settings.CustomSettings.settings.debugColliders == false) return;
 
             GameObject box = GameObject.CreatePrimitive(PrimitiveType.Cube);
             box.transform.position = col.bounds.center;
@@ -42,8 +42,29 @@ namespace ImprovedCougar
             box.GetComponent<Renderer>().material.color = new Color(1f, 1f, 0f, 0.25f); // semi-transparent yellow
 
             // Destroy after a few seconds
-            UnityEngine.Object.Destroy(box, 10f);
+            UnityEngine.Object.Destroy(box, 1f);
         }
 
+        public static void DrawRay(Vector3 start, Vector3 direction, float length, Color color, float duration = 1f)
+        {
+
+            if(Settings.CustomSettings.settings.debugRays == false) return;
+
+            GameObject go = new GameObject("DebugRay");
+            LineRenderer lr = go.AddComponent<LineRenderer>();
+
+            lr.positionCount = 2;
+            lr.SetPosition(0, start);
+            lr.SetPosition(1, start + direction.normalized * length);
+
+            lr.material = new Material(Shader.Find("Sprites/Default"));
+            lr.startColor = lr.endColor = color;
+            lr.startWidth = lr.endWidth = 0.05f;
+            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            lr.receiveShadows = false;
+            lr.useWorldSpace = true;
+
+            GameObject.Destroy(go, duration);
+        }
     }
 }

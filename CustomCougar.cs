@@ -9,6 +9,7 @@ using Il2CppTLD.AI;
 using UnityEngine;
 using Il2CppRewired;
 using Il2CppTMPro;
+using UnityEngine.AI;
 
 namespace ImprovedCougar
 {
@@ -30,9 +31,23 @@ namespace ImprovedCougar
         protected override float m_MinWaypointDistance { get { return 100.0f; } }
         protected override float m_MaxWaypointDistance { get { return 1000.0f; } }
 
-        private const float followDistance = 10f; //for now
+        //distances
+        private const float attackDistance = 20f; //for now
+        private const float closeDistance = 40f; //for now
+        private const float maxStalkDistance = 80f; //for now
 
+        //cover
+        private List<Vector3> coverPositions = new List<Vector3>();
         private Vector3? coverPosition = null;
+
+        //pathfinding
+        List<Vector3> path;
+        int currentIndex = 0;
+        float reachThreshold = 0.5f;
+
+        //time
+        float timeSinceLastPath = 0f;
+        float recalcInterval = 5f;
 
         public override void Initialize(BaseAi ai, TimeOfDay timeOfDay, SpawnRegion spawnRegion)
         {
@@ -50,7 +65,7 @@ namespace ImprovedCougar
             switch (CurrentMode)
             {
                 case AiMode.Stalking:
-                    ProcessStalkingCustom();
+                    ProcessStalkingAdvanced();
                     return false;
                 case (AiMode)CustomCougarAiMode.Hide:
                     ProcessHiding();
@@ -60,48 +75,105 @@ namespace ImprovedCougar
             }
         }
 
+        protected void ProcessStalkingAdvanced()
+        {
+
+            Transform player = GameManager.GetPlayerTransform();
+            Transform cougar = mBaseAi.transform;
+            Vector3 playerPosition = player.position;
+            Vector3 currentCougarPosition = cougar.position;
+            float currentDistance = Vector3.Distance(currentCougarPosition, playerPosition);
+
+            if (currentDistance >= attackDistance)
+            {
+
+                /*** this stuff might not be needed here
+                Vector3 followDirection = (currentCougarPosition - playerPosition).normalized;
+                Vector3 rawFollowPosition = playerPosition + followDirection * (attackDistance * 0.80f);
+                AiUtils.GetClosestNavmeshPos(out Vector3 followPosition, rawFollowPosition, rawFollowPosition);
+                ***/
+
+                timeSinceLastPath += Time.deltaTime;
+                if (timeSinceLastPath > recalcInterval)
+                {
+                    Main.Logger.Log("Calculating path...", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    StartPathfinding();
+                    timeSinceLastPath = 0f;
+                }
+
+                if (path != null && currentIndex < path.Count)
+                {
+
+
+                    Vector3 target = path[currentIndex];
+                    Main.Logger.Log($"Moving to next point on path {target}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    mBaseAi.StartPath(target, mBaseAi.m_StalkSpeed); 
+
+                    if (Vector3.Distance(cougar.position, target) < reachThreshold)
+                    {
+                        currentIndex++;
+                    }
+                }
+
+                /***
+                float time = Time.realtimeSinceStartup - checkStartTime;
+                if (time >= 5f) //make sure the last time this method ran was this duration ago
+                {
+                    coverPositions = FindAllNearbyCover(cougar, player, 50f, Utils.m_PhysicalCollisionLayerMask);
+                }
+
+
+                Vector3 nextPoint = FindNextBestPoint(cougar.position, coverPositions, playerPosition);
+                Main.Logger.Log($"Player position: {playerPosition}.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                Main.Logger.Log($"Going to the next optimal point {nextPoint.ToString()}.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                mBaseAi.StartPath(nextPoint, mBaseAi.m_StalkSpeed);
+                ***/
+
+            }
+
+        }
+
         protected void ProcessStalkingCustom()
         {
             Transform player = GameManager.GetPlayerTransform();
             Transform cougar = mBaseAi.transform;
 
-            //Main.Logger.Log("Cougar is stalking player, processing...", ComplexLogger.FlaggedLoggingLevel.Debug);
+            Vector3 playerPosition = player.position; //uses curr player position
+            Vector3 currentCougarPosition = cougar.position;
+            float currentDistance = Vector3.Distance(currentCougarPosition, playerPosition);
 
+            Main.Logger.Log($"Cougar is stalking player at a distance of {currentDistance} meters...", ComplexLogger.FlaggedLoggingLevel.Debug);
 
-            if (IsPlayerFacingCougar(player, cougar)) //this works
+            if (currentDistance >= closeDistance)
             {
-                //player is looking at cougar
 
-                if (AiUtils.PositionVisible(mBaseAi.GetEyePos(), cougar.forward, mBaseAi.m_CurrentTarget.GetEyePos(), 100f, mBaseAi.m_DetectionFOV, 0f, Utils.m_PhysicalCollisionLayerMask))
+                if (IsPlayerFacingCougar(player, cougar)) //this works
                 {
-                    Main.Logger.Log("Cougar can see player and player is looking. Getting to cover.", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar can see player looking!");
-                    //cougar needs to quickly get into cover to hide
+                    //player is looking at cougar
 
-                    coverPosition = FindNearestCover(cougar, player, 80f, Utils.m_PhysicalCollisionLayerMask);
-
-                    if (coverPosition != null)
+                    if (AiUtils.PositionVisible(mBaseAi.GetEyePos(), cougar.forward, mBaseAi.m_CurrentTarget.GetEyePos(), 100f, mBaseAi.m_DetectionFOV, 0f, Utils.m_PhysicalCollisionLayerMask))
                     {
-                        Main.Logger.Log($"Cover position found: {coverPosition.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                        Main.Logger.Log("Cougar can see player and player is looking. Getting to cover.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                        InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar can see player looking!");
+                        //cougar needs to quickly get into cover to hide
 
-                        //change state here  
-                        SetAiMode((AiMode)CustomCougarAiMode.Hide);
+                        coverPosition = FindNearestCover(cougar, player, 80f, Utils.m_PhysicalCollisionLayerMask);
+
+                        if (coverPosition != null)
+                        {
+                            Main.Logger.Log($"Cover position found: {coverPosition.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+
+                            //change state here  
+                            SetAiMode((AiMode)CustomCougarAiMode.Hide);
+                        }
+                        else Main.Logger.Log("Cannot find cover position. Continue stalking...", ComplexLogger.FlaggedLoggingLevel.Error);
                     }
-                    else Main.Logger.Log("Cannot find cover position. Continue stalking...", ComplexLogger.FlaggedLoggingLevel.Error);
                 }
-            }
-            else
-            {
-
-                Vector3 playerPosition = player.position; //uses curr player position
-                Vector3 currentCougarPosition = cougar.position;
-                float currentDistance = Vector3.Distance(currentCougarPosition, playerPosition);
-
-                if (currentDistance >= followDistance)
+                else
                 {
 
                     Vector3 followDirection = (currentCougarPosition - playerPosition).normalized;
-                    Vector3 rawFollowPosition = playerPosition + followDirection * (followDistance * 0.80f);
+                    Vector3 rawFollowPosition = playerPosition + followDirection * (attackDistance * 0.80f);
                     AiUtils.GetClosestNavmeshPos(out Vector3 followPosition, rawFollowPosition, rawFollowPosition);
 
                     //maybe check if it can reach the player here
@@ -110,10 +182,25 @@ namespace ImprovedCougar
                     mBaseAi.StartPath(player.position, mBaseAi.m_StalkSpeed);
 
                 }
+            }
+            else
+            {
+
+                if(currentDistance >= attackDistance)
+                {
+
+                    Vector3 followDirection = (currentCougarPosition - playerPosition).normalized;
+                    Vector3 rawFollowPosition = playerPosition + followDirection * (attackDistance * 0.80f);
+                    AiUtils.GetClosestNavmeshPos(out Vector3 followPosition, rawFollowPosition, rawFollowPosition);
+
+                    //maybe check if it can reach the player here
+
+                    //keep following player
+                    mBaseAi.StartPath(player.position, mBaseAi.m_StalkSpeed);
+                }
                 else
                 {
-                    Main.Logger.Log("Cougar has reached attack distance", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    //set mode to attack and go nuts
+                    //attack!
                 }
             }
         }
@@ -150,6 +237,11 @@ namespace ImprovedCougar
 
             mBaseAi.MoveAgentStop();
             mBaseAi.m_CurrentTarget = GameManager.GetPlayerManagerComponent().m_AiTarget;
+
+            //coverPositions = FindAllNearbyCover(cougar, player, 50f, Utils.m_PhysicalCollisionLayerMask);
+
+            StartPathfinding();
+
             Main.Logger.Log("Cougar is stalking player", ComplexLogger.FlaggedLoggingLevel.Debug);
             InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is stalking player!");
         }
@@ -181,6 +273,68 @@ namespace ImprovedCougar
             return angle <= 45f;
         }
 
+        private bool CougarCanSeePlayerLooking(Transform player, Transform cougar)
+        {
+
+            if(IsPlayerFacingCougar(player, cougar))
+            {
+                if (AiUtils.PositionVisible(mBaseAi.GetEyePos(), cougar.forward, mBaseAi.m_CurrentTarget.GetEyePos(), 100f, mBaseAi.m_DetectionFOV, 0f, Utils.m_PhysicalCollisionLayerMask)) return true;
+            }
+
+            return false;
+        }
+
+        public List<Vector3> FindAllNearbyCover(Transform cougar, Transform player, float searchRadius, LayerMask coverObstructionMask)
+        {
+            Main.Logger.Log("Grabbing new cover positions relative to cougar", ComplexLogger.FlaggedLoggingLevel.Debug);
+            //checkStartTime = Time.realtimeSinceStartup;
+
+            HashSet<Collider> cougarColliders = new HashSet<Collider>(cougar.GetComponentsInChildren<Collider>());
+            Collider[] nearbyObjects = Physics.OverlapSphere(cougar.position, searchRadius, coverObstructionMask);
+            List<Vector3> coverPoints = new();
+            Vector3 cougarEye = mBaseAi.GetEyePos();
+            Vector3 playerEye = mBaseAi.m_CurrentTarget.GetEyePos();
+            float cougarHeight = GetCougarHeight(cougar);
+
+            Main.Logger.Log($"Nearby cover objects: {nearbyObjects.Length}", ComplexLogger.FlaggedLoggingLevel.Debug);
+
+            foreach (Collider col in nearbyObjects)
+            {
+                if (cougarColliders.Contains(col)) continue;
+                if (col.bounds.Contains(cougar.position)) continue;
+                if (col.bounds.size.y < cougarHeight) continue;
+
+                DebugTools.HighlightColliderBounds(col);
+
+                /***Vector3 dirToCougar = (cougarEye - playerEye).normalized;
+                float distanceToCougar = Vector3.Distance(playerEye, cougarEye); ***/
+
+                Vector3 dirToCollider = (col.bounds.center - playerEye).normalized;
+                float distanceToCollider = Vector3.Distance(playerEye, col.bounds.center);
+
+                //DebugTools.DrawRay(playerEye, dirToCollider, distanceToCollider, Color.red, 5f);
+                if (Physics.Raycast(playerEye, dirToCollider, out RaycastHit hit, distanceToCollider, coverObstructionMask))
+                {
+
+                    if (hit.collider == col)
+                    {
+                        // It blocks LOS between player and cougar — consider it
+                        Vector3 dirFromPlayer = (col.bounds.center - playerEye).normalized;
+                        Vector3 roughCoverPoint = col.bounds.center + dirFromPlayer * col.bounds.extents.magnitude * 0.2f;
+
+                        //DebugTools.CreateDebugMarker(roughCoverPoint, Color.red, 30f);
+
+                        Vector3? finalCoverPoint = ForcePointToGround(roughCoverPoint, col, 30f, 2f, coverObstructionMask, 30f);
+                        if (finalCoverPoint != null)
+                            coverPoints.Add((Vector3)finalCoverPoint);
+                        else
+                            coverPoints.Add(roughCoverPoint);
+                    }
+                }
+            }
+
+            return coverPoints;
+        }
 
 
         //this method works a lot better. The cougar will go to the opposite side of the cover object and truly hide from the player. But it'll often go backwards to do it which looks a little goofy
@@ -236,7 +390,7 @@ namespace ImprovedCougar
                 Vector3 dirFromPlayer = (bestCollider.bounds.center - playerEye).normalized;
                 Vector3 initialCoverPoint = bestCollider.bounds.center + dirFromPlayer * bestCollider.bounds.extents.magnitude * 0.25f;
 
-                DebugTools.CreateDebugMarker(initialCoverPoint, Color.red);
+                DebugTools.CreateDebugMarker(initialCoverPoint, Color.red, 10f);
 
                 Vector3? finalCoverPoint = ForcePointToGround(initialCoverPoint, bestCollider, 25f, 2f, coverObstructionMask);
 
@@ -278,7 +432,7 @@ namespace ImprovedCougar
             return null;
         }
 
-        public Vector3? ForcePointToGround(Vector3 startPoint, Collider excludedCollider, float maxDrop = 10f, float stepSize = 0.5f, LayerMask groundMask = default)
+        public Vector3? ForcePointToGround(Vector3 startPoint, Collider excludedCollider, float maxDrop = 10f, float stepSize = 0.5f, LayerMask groundMask = default, float debugDuration = 10f)
         {
             float totalDrop = 0f;
             Vector3 probePoint = startPoint;
@@ -291,7 +445,7 @@ namespace ImprovedCougar
                     if (hit.collider != excludedCollider)
                     {
                         Main.Logger.Log($"To ground raycast hit! Found point {hit.point.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
-                        DebugTools.CreateDebugMarker(hit.point, Color.green);
+                        //DebugTools.CreateDebugMarker(hit.point, Color.green, debugDuration);
                         // Found valid ground!
                         return hit.point;
                     }
@@ -367,7 +521,100 @@ namespace ImprovedCougar
             return combinedBounds.size.y;
         }
 
+        float GetAStarPathCost(Vector3 from, Vector3 to)
+        {
+            NavMeshPath path = new NavMeshPath();
+            if (NavMesh.CalculatePath(from, to, NavMesh.AllAreas, path))
+            {
+                float cost = 0f;
+                for (int i = 1; i < path.corners.Length; i++)
+                {
+                    cost += Vector3.Distance(path.corners[i - 1], path.corners[i]);
+                }
+                return cost;
+            }
+            return Mathf.Infinity; // No valid path
+        }
 
+        List<Vector3> FindOptimalPath(Vector3 start, List<Vector3> coverPoints, Vector3 finalTarget)
+        {
+            List<Vector3> unvisited = new List<Vector3>(coverPoints);
+            List<Vector3> path = new List<Vector3>();
+            HashSet<Vector3> visited = new HashSet<Vector3>();
+            Vector3 current = start;
+
+            while (unvisited.Count > 0)
+            {
+                float bestScore = Mathf.Infinity;
+                Vector3 bestPoint = Vector3.zero;
+                int bestIndex = -1;
+
+                for (int i = 0; i < unvisited.Count; i++)
+                {
+                    Vector3 candidate = unvisited[i];
+                    float cost = GetAStarPathCost(current, candidate);
+
+                    // Penalize visited or reverse-direction moves
+                    if (visited.Contains(candidate))
+                        cost *= 2f; // discourage loops
+
+                    // Optional: prefer forward movement (not behind cougar)
+                    Vector3 toCandidate = (candidate - current).normalized;
+                    Vector3 toPlayer = (finalTarget - current).normalized;
+                    float directionDot = Vector3.Dot(toCandidate, toPlayer); // 1 = same direction, -1 = opposite
+
+                    if (directionDot < 0.2f)
+                        cost *= 1.5f; // penalize backward moves
+
+                    if (cost < bestScore)
+                    {
+                        bestScore = cost;
+                        bestPoint = candidate;
+                        bestIndex = i;
+                    }
+                }
+
+                if (bestIndex >= 0)
+                {
+                    path.Add(bestPoint);
+                    visited.Add(bestPoint);
+                    current = bestPoint;
+                    unvisited.RemoveAt(bestIndex);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            path.Add(finalTarget);
+            return path;
+        }
+
+
+        private void StartPathfinding()
+        {
+            Transform player = GameManager.GetPlayerTransform();
+            Transform cougar = mBaseAi.transform;
+
+            float dist = Vector3.Distance(player.position, cougar.position);
+
+            List<Vector3> coverPoints = FindAllNearbyCover(cougar, player, dist, Utils.m_PhysicalCollisionLayerMask);
+            path = FindOptimalPath(transform.position, coverPoints, player.position);
+
+            if(path != null)
+            {
+                foreach(Vector3 point in path)
+                {
+                    Main.Logger.Log(point.ToString(), ComplexLogger.FlaggedLoggingLevel.Debug);
+                    if (point == player.position) break;
+                    DebugTools.CreateDebugMarker(point, Color.green, 4f);
+                }
+            }
+
+            currentIndex = 0;
+            timeSinceLastPath = 0f;
+        }
 
     }
 }
