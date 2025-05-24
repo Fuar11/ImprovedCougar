@@ -13,6 +13,7 @@ using UnityEngine.AI;
 using ImprovedCougar.Pathfinding;
 using System.Drawing;
 using Color = UnityEngine.Color;
+using static Il2Cpp.UIAtlas;
 
 namespace ImprovedCougar
 {
@@ -34,14 +35,19 @@ namespace ImprovedCougar
         protected override float m_MinWaypointDistance { get { return 100.0f; } }
         protected override float m_MaxWaypointDistance { get { return 1000.0f; } }
 
+        //speeds
+        private float currentStalkSpeed = 0f;
+
+        private float baseStalkSpeed = 0f;
+        private float spottedStalkSpeed = 0f;
+
         //distances
         private const float attackDistance = 20f; //for now
-        private const float closeDistance = 40f; //for now
         private const float maxStalkDistance = 80f; //for now
 
         //cover
-        private List<Vector3> coverPositions = new List<Vector3>();
-        private Vector3? coverPosition = null;
+        //private List<Vector3> coverPositions = new List<Vector3>();
+        //private Vector3? coverPosition = null;
 
         //pathfinding
         List<Vector3> path;
@@ -52,11 +58,17 @@ namespace ImprovedCougar
         float timeSinceLastPath = 0f;
         float recalcInterval = 5f;
 
+        float timeSinceHiding = 0f;
+        float timeToComeOut = 3f;
+
         public override void Initialize(BaseAi ai, TimeOfDay timeOfDay, SpawnRegion spawnRegion)
         {
             base.Initialize(ai, timeOfDay, spawnRegion);
             mBaseAi.m_DefaultMode = AiMode.Wander;
             mBaseAi.m_StartMode = AiMode.Wander;
+            baseStalkSpeed = mBaseAi.m_StalkSpeed + 2;
+            spottedStalkSpeed = mBaseAi.m_ChasePlayerSpeed;
+
             Main.Logger.Log("Cougar initialized", ComplexLogger.FlaggedLoggingLevel.Debug);
         }
 
@@ -90,12 +102,6 @@ namespace ImprovedCougar
             if (currentDistance >= attackDistance)
             {
 
-                /*** this stuff might not be needed here
-                Vector3 followDirection = (currentCougarPosition - playerPosition).normalized;
-                Vector3 rawFollowPosition = playerPosition + followDirection * (attackDistance * 0.80f);
-                AiUtils.GetClosestNavmeshPos(out Vector3 followPosition, rawFollowPosition, rawFollowPosition);
-                ***/
-
                 timeSinceLastPath += Time.deltaTime;
                 if (timeSinceLastPath > recalcInterval)
                 {
@@ -104,34 +110,38 @@ namespace ImprovedCougar
                     timeSinceLastPath = 0f;
                 }
 
+                if (CougarCanSeePlayerLooking(player, cougar))
+                {
+                    currentStalkSpeed = spottedStalkSpeed;
+                }
+
                 if (path != null && currentIndex < path.Count)
                 {
 
                     //Main.Logger.Log($"Cougar distance to player: {currentDistance}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                     Vector3 target = path[currentIndex];
-                    mBaseAi.StartPath(target, mBaseAi.m_StalkSpeed + 2); 
+                    mBaseAi.StartPath(target, currentStalkSpeed); 
 
                     if (Vector3.Distance(cougar.position, target) < reachThreshold)
                     {
                         currentIndex++;
+                        if(currentStalkSpeed == spottedStalkSpeed)
+                        {
+                            currentStalkSpeed = baseStalkSpeed;
+                            SetAiMode((AiMode)CustomCougarAiMode.Hide);
+                        }
+
                     }
                 }
-
-                /***
-                float time = Time.realtimeSinceStartup - checkStartTime;
-                if (time >= 5f) //make sure the last time this method ran was this duration ago
+                else
                 {
-                    coverPositions = FindAllNearbyCover(cougar, player, 50f, Utils.m_PhysicalCollisionLayerMask);
+                    mBaseAi.StartPath(playerPosition, currentStalkSpeed); //if no path found just keep stalking the player normally until a path can be found
                 }
-
-
-                Vector3 nextPoint = FindNextBestPoint(cougar.position, coverPositions, playerPosition);
-                Main.Logger.Log($"Player position: {playerPosition}.", ComplexLogger.FlaggedLoggingLevel.Debug);
-                Main.Logger.Log($"Going to the next optimal point {nextPoint.ToString()}.", ComplexLogger.FlaggedLoggingLevel.Debug);
-                mBaseAi.StartPath(nextPoint, mBaseAi.m_StalkSpeed);
-                ***/
-
+            }
+            else
+            {
+                //AiModeSet to attack! or something like that
             }
 
         }
@@ -217,20 +227,24 @@ namespace ImprovedCougar
 
             //check player distance, if it gets too close to a hiding cougar it can despawn and move to a more advantageous position
 
-            if (cougar.position == coverPosition) mBaseAi.MoveAgentStop();
-
             if (!IsPlayerFacingCougar(player, cougar)) //this works
             {
-                //player is NOT looking at cougar
+                //wait a few seconds to keep stalking
 
-                Main.Logger.Log("Cougar is hiding and player is not looking. Continuing to stalk...", ComplexLogger.FlaggedLoggingLevel.Debug);
-                //cougar can come out and keep pursuing the player
+                timeSinceHiding += Time.deltaTime;
+                if(timeSinceHiding > timeToComeOut)
+                {
+                    Main.Logger.Log("Cougar is hiding and player is not looking. Continuing to stalk...", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    //cougar can come out and keep pursuing the player
 
-                //change state here  
-                SetAiMode(AiMode.Stalking);
-
+                    //change state here  
+                    SetAiMode(AiMode.Stalking);
+                }
             }
-            //else we need something that prevents the player from trapping the cougar behind cover indefinitely, teleport maybe?
+            else
+            {
+                //make the cougar invisible! this use case is most likely to involve the player walking backwards, or moving towards the hiding cougar
+            }
         }
 
         protected void BeginStalking()
@@ -254,12 +268,12 @@ namespace ImprovedCougar
             Transform player = GameManager.GetPlayerTransform();
             Transform cougar = mBaseAi.transform;
 
+            timeSinceHiding = 0f;
             mBaseAi.MoveAgentStop();
             //mBaseAi.ClearTarget(); 
 
             //if we get here coverPosition MUST be true
-            mBaseAi.StartPath((Vector3)coverPosition, mBaseAi.m_ChasePlayerSpeed);
-            Main.Logger.Log("Moving towards cover", ComplexLogger.FlaggedLoggingLevel.Debug);
+            Main.Logger.Log("Hiding in cover", ComplexLogger.FlaggedLoggingLevel.Debug);
             InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is moving to cover!");
 
         }
@@ -339,8 +353,7 @@ namespace ImprovedCougar
             return coverPoints;
         }
 
-
-        //this method works a lot better. The cougar will go to the opposite side of the cover object and truly hide from the player. But it'll often go backwards to do it which looks a little goofy
+        //obsolete
         public Vector3? FindNearestCover(Transform cougar, Transform player, float searchRadius, LayerMask coverObstructionMask)
         {
             HashSet<Collider> cougarColliders = new HashSet<Collider>(cougar.GetComponentsInChildren<Collider>());
@@ -476,21 +489,6 @@ namespace ImprovedCougar
                     return false;
                 default:
                     LogVerbose($"EnterAiModeCustom: mode is {mode}, deferring.");
-                    return true;
-            }
-        }
-
-        protected override bool IsMoveStateCustom(AiMode mode, out bool isMoveState)
-        {
-            switch (mode)
-            {
-                case (AiMode)CustomCougarAiMode.Hide:
-                    LogVerbose($"IsMoveStateCustom: mode is {mode}, setting isMoveState true.");
-                    isMoveState = true;
-                    return false;
-                default:
-                    LogVerbose($"IsMoveStateCustom: mode is {mode}, deferring.");
-                    isMoveState = false;
                     return true;
             }
         }
