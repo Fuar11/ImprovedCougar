@@ -53,6 +53,7 @@ namespace ImprovedCougar
         List<Vector3> path;
         int currentIndex = 0;
         float reachThreshold = 0.5f;
+        bool pathBroken = false;
 
         //time
         float timeSinceLastPath = 0f;
@@ -103,25 +104,40 @@ namespace ImprovedCougar
             {
 
                 timeSinceLastPath += Time.deltaTime;
-                if (timeSinceLastPath > recalcInterval)
+                if (timeSinceLastPath > recalcInterval || pathBroken)
                 {
                     Main.Logger.Log("Calculating path...", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is pathfinding!");
                     StartStalkingPathfinding();
-                    timeSinceLastPath = 0f;
                 }
 
                 if (CougarCanSeePlayerLooking(player, cougar))
                 {
-                    currentStalkSpeed = spottedStalkSpeed;
+                    if(currentDistance >= 25f) currentStalkSpeed = spottedStalkSpeed;
+                    else { } //change state to freeze & flee? 
                 }
 
                 if (path != null && currentIndex < path.Count)
                 {
 
-                    //Main.Logger.Log($"Cougar distance to player: {currentDistance}", ComplexLogger.FlaggedLoggingLevel.Debug);
-
                     Vector3 target = path[currentIndex];
-                    mBaseAi.StartPath(target, currentStalkSpeed); 
+
+                    //the idea here is that before moving to the next point on the path, validate if it's still in cover. If the player moved enough it probably isn't, so return and recalculate next frame
+                    if (!IsPointStillCover(target, mBaseAi.m_CurrentTarget.GetEyePos(), Utils.m_PhysicalCollisionLayerMask))
+                    {
+                        pathBroken = true;
+                        return;
+                    }
+
+                    //while the cougar is moving however, the player could move and the position it is currently moving to may be
+                    //invalid and there is nothing we can do until the cougar gets there. Unless we have control over the move agent
+                    //and can tell it to stop and do the same thing as the above but during movement
+                    mBaseAi.StartPath(target, currentStalkSpeed);
+
+                    if (!mBaseAi.CanPathfindToPosition(target))
+                    {
+                        TeleportCougarToPosition(target, cougar);
+                    }
 
                     if (Vector3.Distance(cougar.position, target) < reachThreshold)
                     {
@@ -225,8 +241,6 @@ namespace ImprovedCougar
             Transform player = GameManager.GetPlayerTransform();
             Transform cougar = mBaseAi.transform;
 
-            //check player distance, if it gets too close to a hiding cougar it can despawn and move to a more advantageous position
-
             if (!IsPlayerFacingCougar(player, cougar)) //this works
             {
                 //wait a few seconds to keep stalking
@@ -235,7 +249,6 @@ namespace ImprovedCougar
                 if(timeSinceHiding > timeToComeOut)
                 {
                     Main.Logger.Log("Cougar is hiding and player is not looking. Continuing to stalk...", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    //cougar can come out and keep pursuing the player
 
                     //change state here  
                     SetAiMode(AiMode.Stalking);
@@ -260,7 +273,7 @@ namespace ImprovedCougar
             StartStalkingPathfinding();
 
             Main.Logger.Log("Cougar is stalking player", ComplexLogger.FlaggedLoggingLevel.Debug);
-            InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is stalking player!");
+            //InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is stalking player!");
         }
 
         protected void BeginHiding()
@@ -270,11 +283,9 @@ namespace ImprovedCougar
 
             timeSinceHiding = 0f;
             mBaseAi.MoveAgentStop();
-            //mBaseAi.ClearTarget(); 
 
-            //if we get here coverPosition MUST be true
             Main.Logger.Log("Hiding in cover", ComplexLogger.FlaggedLoggingLevel.Debug);
-            InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is moving to cover!");
+            //InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is moving to cover!");
 
         }
 
@@ -448,6 +459,18 @@ namespace ImprovedCougar
             return null;
         }
 
+        bool IsPointStillCover(Vector3 coverPoint, Vector3 playerEye, LayerMask coverMask)
+        {
+            Vector3 direction = (coverPoint - playerEye).normalized;
+            float distance = Vector3.Distance(playerEye, coverPoint);
+
+            if (Physics.Raycast(playerEye, direction, out RaycastHit hit, distance, coverMask))
+            {
+                return Vector3.Distance(hit.point, coverPoint) < 1f; // close enough to mean it still blocks LOS
+            }
+
+            return false;
+        }
         public Vector3? ForcePointToGround(Vector3 startPoint, Collider excludedCollider, float maxDrop = 10f, float stepSize = 0.5f, LayerMask groundMask = default, float debugDuration = 10f)
         {
             float totalDrop = 0f;
@@ -540,7 +563,8 @@ namespace ImprovedCougar
 
             if(path != null)
             {
-                foreach(Vector3 point in path)
+                pathBroken = false;
+                foreach (Vector3 point in path)
                 {
                     if (point == player.position) break;
                     DebugTools.CreateDebugMarker(point, Color.green, 5f);
@@ -549,6 +573,21 @@ namespace ImprovedCougar
 
             currentIndex = 0;
             timeSinceLastPath = 0f;
+        }
+
+        private void TeleportCougarToPosition(Vector3 pos, Transform cougar)
+        {
+
+            mBaseAi.GetMoveAgent().enabled = false;
+
+            // Move the cougar instantly
+            cougar.position = pos;
+                
+            // Re-enable the NavMeshAgent
+            mBaseAi.GetMoveAgent().enabled = true;
+
+            Main.Logger.Log($"Teleporting cougar to position {pos.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+
         }
 
     }
