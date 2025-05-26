@@ -14,6 +14,8 @@ using ImprovedCougar.Pathfinding;
 using System.Drawing;
 using Color = UnityEngine.Color;
 using static Il2Cpp.UIAtlas;
+using static UnityEngine.GraphicsBuffer;
+using UnityEngine.Tilemaps;
 
 namespace ImprovedCougar
 {
@@ -48,6 +50,8 @@ namespace ImprovedCougar
         //cover
         //private List<Vector3> coverPositions = new List<Vector3>();
         //private Vector3? coverPosition = null;
+        private bool toTeleport = false;
+        private bool toHide = false;
 
         //pathfinding
         List<Vector3> path;
@@ -57,10 +61,10 @@ namespace ImprovedCougar
 
         //time
         float timeSinceLastPath = 0f;
-        float recalcInterval = 5f;
+        float recalcInterval = 3.5f;
 
         float timeSinceHiding = 0f;
-        float timeToComeOut = 3f;
+        float timeToComeOut = 2f;
 
         public override void Initialize(BaseAi ai, TimeOfDay timeOfDay, SpawnRegion spawnRegion)
         {
@@ -107,15 +111,16 @@ namespace ImprovedCougar
                 if (timeSinceLastPath > recalcInterval || pathBroken)
                 {
                     Main.Logger.Log("Calculating path...", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is pathfinding!");
                     StartStalkingPathfinding();
                 }
 
+                /***
                 if (CougarCanSeePlayerLooking(player, cougar))
                 {
-                    if(currentDistance >= 25f) currentStalkSpeed = spottedStalkSpeed;
+                    //we could teleport here too
+                    if (currentDistance >= 30f) currentStalkSpeed = spottedStalkSpeed;
                     else { } //change state to freeze & flee? 
-                }
+                } ***/
 
                 if (path != null && currentIndex < path.Count)
                 {
@@ -123,11 +128,11 @@ namespace ImprovedCougar
                     Vector3 target = path[currentIndex];
 
                     //the idea here is that before moving to the next point on the path, validate if it's still in cover. If the player moved enough it probably isn't, so return and recalculate next frame
-                    if (!IsPointStillCover(target, mBaseAi.m_CurrentTarget.GetEyePos(), Utils.m_PhysicalCollisionLayerMask))
-                    {
-                        pathBroken = true;
-                        return;
-                    }
+
+                    Main.Logger.Log($"Cougar position: {currentCougarPosition.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    Main.Logger.Log($"Player position: {playerPosition.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    Main.Logger.Log($"Moving to position: {target.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    Main.Logger.Log($"To tp is: {toTeleport}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                     //while the cougar is moving however, the player could move and the position it is currently moving to may be
                     //invalid and there is nothing we can do until the cougar gets there. Unless we have control over the move agent
@@ -141,11 +146,30 @@ namespace ImprovedCougar
 
                     if (Vector3.Distance(cougar.position, target) < reachThreshold)
                     {
-                        currentIndex++;
-                        if(currentStalkSpeed == spottedStalkSpeed)
+                        if(toHide && currentIndex != 0) 
                         {
                             currentStalkSpeed = baseStalkSpeed;
                             SetAiMode((AiMode)CustomCougarAiMode.Hide);
+                        }
+                        currentIndex++;
+                    }
+                    else //still moving towards node
+                    {
+                        if (currentIndex == 0 || target == playerPosition) return;
+
+                        if(!IsPointStillCover(target, mBaseAi.m_CurrentTarget.GetEyePos(), Utils.m_PhysicalCollisionLayerMask))
+                        {
+                            mBaseAi.MoveAgentStop();
+                            Main.Logger.Log($"Current point {target.ToString()} is invalid at index {currentIndex}. Repathing.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                            pathBroken = true;
+                            toTeleport = true;
+                            toHide = true;
+                            return;
+                        }
+                        else if(toTeleport)
+                        {
+                            TeleportCougarToPosition(target, cougar);
+                            return;
                         }
 
                     }
@@ -161,80 +185,6 @@ namespace ImprovedCougar
             }
 
         }
-
-
-        /***
-        protected void ProcessStalkingBasic()
-        {
-            Transform player = GameManager.GetPlayerTransform();
-            Transform cougar = mBaseAi.transform;
-
-            Vector3 playerPosition = player.position; //uses curr player position
-            Vector3 currentCougarPosition = cougar.position;
-            float currentDistance = Vector3.Distance(currentCougarPosition, playerPosition);
-
-            Main.Logger.Log($"Cougar is stalking player at a distance of {currentDistance} meters...", ComplexLogger.FlaggedLoggingLevel.Debug);
-
-            if (currentDistance >= closeDistance)
-            {
-
-                if (IsPlayerFacingCougar(player, cougar)) //this works
-                {
-                    //player is looking at cougar
-
-                    if (AiUtils.PositionVisible(mBaseAi.GetEyePos(), cougar.forward, mBaseAi.m_CurrentTarget.GetEyePos(), 100f, mBaseAi.m_DetectionFOV, 0f, Utils.m_PhysicalCollisionLayerMask))
-                    {
-                        Main.Logger.Log("Cougar can see player and player is looking. Getting to cover.", ComplexLogger.FlaggedLoggingLevel.Debug);
-                        InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar can see player looking!");
-                        //cougar needs to quickly get into cover to hide
-
-                        coverPosition = FindNearestCover(cougar, player, 80f, Utils.m_PhysicalCollisionLayerMask);
-
-                        if (coverPosition != null)
-                        {
-                            Main.Logger.Log($"Cover position found: {coverPosition.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
-
-                            //change state here  
-                            SetAiMode((AiMode)CustomCougarAiMode.Hide);
-                        }
-                        else Main.Logger.Log("Cannot find cover position. Continue stalking...", ComplexLogger.FlaggedLoggingLevel.Error);
-                    }
-                }
-                else
-                {
-
-                    Vector3 followDirection = (currentCougarPosition - playerPosition).normalized;
-                    Vector3 rawFollowPosition = playerPosition + followDirection * (attackDistance * 0.80f);
-                    AiUtils.GetClosestNavmeshPos(out Vector3 followPosition, rawFollowPosition, rawFollowPosition);
-
-                    //maybe check if it can reach the player here
-
-                    //keep following player
-                    mBaseAi.StartPath(player.position, mBaseAi.m_StalkSpeed);
-
-                }
-            }
-            else
-            {
-
-                if(currentDistance >= attackDistance)
-                {
-
-                    Vector3 followDirection = (currentCougarPosition - playerPosition).normalized;
-                    Vector3 rawFollowPosition = playerPosition + followDirection * (attackDistance * 0.80f);
-                    AiUtils.GetClosestNavmeshPos(out Vector3 followPosition, rawFollowPosition, rawFollowPosition);
-
-                    //maybe check if it can reach the player here
-
-                    //keep following player
-                    mBaseAi.StartPath(player.position, mBaseAi.m_StalkSpeed);
-                }
-                else
-                {
-                    //attack!
-                }
-            }
-        } ***/
 
         protected void ProcessHiding()
         {
@@ -269,6 +219,8 @@ namespace ImprovedCougar
 
             mBaseAi.MoveAgentStop();
             mBaseAi.m_CurrentTarget = GameManager.GetPlayerManagerComponent().m_AiTarget;
+            currentStalkSpeed = baseStalkSpeed;
+            toTeleport = false;
 
             StartStalkingPathfinding();
 
@@ -283,6 +235,7 @@ namespace ImprovedCougar
 
             timeSinceHiding = 0f;
             mBaseAi.MoveAgentStop();
+            toHide = false;
 
             Main.Logger.Log("Hiding in cover", ComplexLogger.FlaggedLoggingLevel.Debug);
             //InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is moving to cover!");
@@ -364,112 +317,12 @@ namespace ImprovedCougar
             return coverPoints;
         }
 
-        //obsolete
-        public Vector3? FindNearestCover(Transform cougar, Transform player, float searchRadius, LayerMask coverObstructionMask)
-        {
-            HashSet<Collider> cougarColliders = new HashSet<Collider>(cougar.GetComponentsInChildren<Collider>());
-            Collider[] nearbyObjects = Physics.OverlapSphere(cougar.position, searchRadius, coverObstructionMask);
-            Vector3 cougarEye = mBaseAi.GetEyePos();
-            Vector3 playerEye = mBaseAi.m_CurrentTarget.GetEyePos();
-            float cougarHeight = GetCougarHeight(cougar);
-
-            Collider bestCollider = null;
-            float closestDistance = Mathf.Infinity;
-
-            Main.Logger.Log($"Cougar position: {cougar.position.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
-
-            foreach (Collider col in nearbyObjects)
-            {
-                // Get the closest collider to the cougar
-
-                if (cougarColliders.Contains(col))
-                    continue;
-
-                if (col.bounds.Contains(cougar.position))
-                    continue;
-
-                if (col.bounds.size.y < cougarHeight) continue;
-
-
-                Vector3 dirToCollider = (col.bounds.center - playerEye).normalized;
-                float distanceToCollider = Vector3.Distance(playerEye, col.bounds.center);
-
-                if (Physics.Raycast(playerEye, dirToCollider, out RaycastHit hit, distanceToCollider, coverObstructionMask))
-                {
-                    if (hit.collider == col)
-                    {
-                        float distanceToCougar = Vector3.Distance(cougar.position, col.bounds.center);
-                        if (distanceToCougar < closestDistance)
-                        {
-                            closestDistance = distanceToCougar;
-                            bestCollider = col;
-                        }
-                    }
-                }
-            }
-
-            if (bestCollider != null)
-            {
-
-                DebugTools.HighlightColliderBounds(bestCollider);
-
-                // Get a point behind the collider (relative to the player)
-                Vector3 dirFromPlayer = (bestCollider.bounds.center - playerEye).normalized;
-                Vector3 initialCoverPoint = bestCollider.bounds.center + dirFromPlayer * bestCollider.bounds.extents.magnitude * 0.25f;
-
-                DebugTools.CreateDebugMarker(initialCoverPoint, Color.red, 10f);
-
-                Vector3? finalCoverPoint = ForcePointToGround(initialCoverPoint, bestCollider, 25f, 2f, coverObstructionMask);
-
-                return finalCoverPoint != initialCoverPoint ? finalCoverPoint : initialCoverPoint;
-
-                /***
-
-                //checks to see if it can lower the point to the ground, since sometimes it's too high for the cougar to reach
-                if (Physics.Raycast(initialCoverPoint, Vector3.down, out RaycastHit groundHit, 10f))
-                {
-                    Vector3 groundedPoint = groundHit.point;
-                    Main.Logger.Log($"To ground raycast hit! Found point {groundedPoint.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    DebugTools.CreateDebugMarker(groundedPoint, Color.green);
-                    return groundedPoint;
-                }
-                else
-                {
-
-                    Vector3 forcedDownPoint = initialCoverPoint;
-                    forcedDownPoint.y -= 15.0f; // Drop it by a lot to get below any branches and other blocking objects
-
-                    DebugTools.CreateDebugMarker(forcedDownPoint, Color.magenta);
-
-                    if (Physics.Raycast(forcedDownPoint, Vector3.down, out RaycastHit groundHit2, 10f))
-                    {
-                        Vector3 groundedPoint = groundHit2.point;
-
-                        
-
-                        Main.Logger.Log($"To ground raycast 2 hit! Found point {groundedPoint.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
-                        DebugTools.CreateDebugMarker(groundedPoint, Color.green);
-                        return groundedPoint;
-                    }
-                } ***/
-
-                //return initialCoverPoint;
-            }
-
-            return null;
-        }
-
         bool IsPointStillCover(Vector3 coverPoint, Vector3 playerEye, LayerMask coverMask)
         {
             Vector3 direction = (coverPoint - playerEye).normalized;
             float distance = Vector3.Distance(playerEye, coverPoint);
-
-            if (Physics.Raycast(playerEye, direction, out RaycastHit hit, distance, coverMask))
-            {
-                return Vector3.Distance(hit.point, coverPoint) < 1f; // close enough to mean it still blocks LOS
-            }
-
-            return false;
+            
+            return Physics.Raycast(playerEye, direction, out RaycastHit hit, distance, coverMask) ? true : false;
         }
         public Vector3? ForcePointToGround(Vector3 startPoint, Collider excludedCollider, float maxDrop = 10f, float stepSize = 0.5f, LayerMask groundMask = default, float debugDuration = 10f)
         {
@@ -553,21 +406,17 @@ namespace ImprovedCougar
 
             List<Vector3> coverPoints = FindAllNearbyCover(cougar, player, dist, Utils.m_PhysicalCollisionLayerMask);
 
-            foreach (Vector3 coverPoint in coverPoints)
-            {
-                if (coverPoint == player.position) break;
-                DebugTools.CreateDebugMarker(coverPoint, Color.red, 4f);
-            }
-
-            path = PathfindingFunctions.FindAStarPath(transform.position, coverPoints, player.position);
+            path = PathfindingFunctions.FindAStarPath(cougar.position, coverPoints, player.position);
 
             if(path != null)
             {
                 pathBroken = false;
+                Main.Logger.Log($"Path found with {path.Count - 2} nodes", ComplexLogger.FlaggedLoggingLevel.Debug);
                 foreach (Vector3 point in path)
                 {
-                    if (point == player.position) break;
-                    DebugTools.CreateDebugMarker(point, Color.green, 5f);
+                    if (point == player.position || point == cougar.position) break;
+                    Main.Logger.Log($"Pathed point {point.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    //DebugTools.CreateDebugMarker(point, Color.green, 5f);
                 }
             }
 
@@ -585,6 +434,8 @@ namespace ImprovedCougar
                 
             // Re-enable the NavMeshAgent
             mBaseAi.GetMoveAgent().enabled = true;
+
+            if(toTeleport) toTeleport = false;
 
             Main.Logger.Log($"Teleporting cougar to position {pos.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
 

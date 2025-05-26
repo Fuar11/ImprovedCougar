@@ -12,10 +12,11 @@ namespace ImprovedCougar
 
         public static void CreateDebugMarker(Vector3 position, Color color, float duration)
         {
-
             if (Settings.CustomSettings.settings.debugPoints == false) return;
 
+            // Create the sphere marker
             GameObject marker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            marker.name = "DebugSphere";
             marker.transform.position = position;
             marker.transform.localScale = Vector3.one * 0.3f;
 
@@ -27,8 +28,22 @@ namespace ImprovedCougar
                 renderer.material.color = color;
             }
 
-            // Auto-destroy after a few seconds
+            // Create a vertical line (cylinder) going up into the sky
+            GameObject line = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            line.transform.position = position + Vector3.up * 2.5f; // center the cylinder
+            line.transform.localScale = new Vector3(0.05f, 2.5f, 0.05f); // thin tall cylinder
+            line.transform.rotation = Quaternion.identity;
+
+            var lineRenderer = line.GetComponent<Renderer>();
+            if (lineRenderer != null)
+            {
+                lineRenderer.material = new Material(Shader.Find("Standard"));
+                lineRenderer.material.color = color;
+            }
+
+            // Destroy both after duration
             UnityEngine.Object.Destroy(marker, duration);
+            UnityEngine.Object.Destroy(line, duration);
         }
 
         public static void HighlightColliderBounds(Collider col)
@@ -48,7 +63,7 @@ namespace ImprovedCougar
         public static void DrawRay(Vector3 start, Vector3 direction, float length, Color color, float duration = 1f)
         {
 
-            if(Settings.CustomSettings.settings.debugRays == false) return;
+            //if(Settings.CustomSettings.settings.debugRays == false) return;
 
             GameObject go = new GameObject("DebugRay");
             LineRenderer lr = go.AddComponent<LineRenderer>();
