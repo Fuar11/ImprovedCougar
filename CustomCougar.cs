@@ -16,6 +16,7 @@ using Color = UnityEngine.Color;
 using static Il2Cpp.UIAtlas;
 using static UnityEngine.GraphicsBuffer;
 using UnityEngine.Tilemaps;
+using Il2CppSystem.Xml;
 
 namespace ImprovedCougar
 {
@@ -61,7 +62,7 @@ namespace ImprovedCougar
 
         //time
         float timeSinceLastPath = 0f;
-        float recalcInterval = 3.5f;
+        float recalcInterval = 0.5f;
 
         float timeSinceHiding = 0f;
         float timeToComeOut = 2f;
@@ -122,6 +123,9 @@ namespace ImprovedCougar
                     else { } //change state to freeze & flee? 
                 } ***/
 
+                Main.Logger.Log($"Cougar position: {currentCougarPosition.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                Main.Logger.Log($"Player position: {playerPosition.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+
                 if (path != null && currentIndex < path.Count)
                 {
 
@@ -129,10 +133,8 @@ namespace ImprovedCougar
 
                     //the idea here is that before moving to the next point on the path, validate if it's still in cover. If the player moved enough it probably isn't, so return and recalculate next frame
 
-                    Main.Logger.Log($"Cougar position: {currentCougarPosition.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    Main.Logger.Log($"Player position: {playerPosition.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    
                     Main.Logger.Log($"Moving to position: {target.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    Main.Logger.Log($"To tp is: {toTeleport}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                     //while the cougar is moving however, the player could move and the position it is currently moving to may be
                     //invalid and there is nothing we can do until the cougar gets there. Unless we have control over the move agent
@@ -160,7 +162,7 @@ namespace ImprovedCougar
                         if(!IsPointStillCover(target, mBaseAi.m_CurrentTarget.GetEyePos(), Utils.m_PhysicalCollisionLayerMask))
                         {
                             mBaseAi.MoveAgentStop();
-                            Main.Logger.Log($"Current point {target.ToString()} is invalid at index {currentIndex}. Repathing.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                            //Main.Logger.Log($"Current point {target.ToString()} is invalid at index {currentIndex}. Repathing.", ComplexLogger.FlaggedLoggingLevel.Debug);
                             pathBroken = true;
                             toTeleport = true;
                             toHide = true;
@@ -265,13 +267,15 @@ namespace ImprovedCougar
             return false;
         }
 
-        public List<Vector3> FindAllNearbyCover(Transform cougar, Transform player, float searchRadius, LayerMask coverObstructionMask)
+        public List<Vector3> FindAllNearbyCover(Transform cougar, Transform player, float maxDistance, LayerMask coverObstructionMask)
         {
             Main.Logger.Log("Grabbing new cover positions relative to cougar", ComplexLogger.FlaggedLoggingLevel.Debug);
             //checkStartTime = Time.realtimeSinceStartup;
 
+            Vector3 directionToPlayer = (player.position - cougar.position).normalized;
             HashSet<Collider> cougarColliders = new HashSet<Collider>(cougar.GetComponentsInChildren<Collider>());
-            Collider[] nearbyObjects = Physics.OverlapSphere(cougar.position, searchRadius, coverObstructionMask);
+            RaycastHit[] sphereCastHits = Physics.SphereCastAll(cougar.position, 70f, directionToPlayer, maxDistance, coverObstructionMask);
+            Collider[] nearbyObjects = sphereCastHits.Select(hit => hit.collider).ToArray();
             List<Vector3> coverPoints = new();
             Vector3 cougarEye = mBaseAi.GetEyePos();
             Vector3 playerEye = mBaseAi.m_CurrentTarget.GetEyePos();
