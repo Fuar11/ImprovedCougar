@@ -28,6 +28,7 @@ namespace ImprovedCougar
         private enum CustomCougarAiMode : int
         {
             Hide = AiMode.Disabled + 1,
+            Freeze = AiMode.Disabled + 2,
             COUNT
         }
 
@@ -46,13 +47,17 @@ namespace ImprovedCougar
 
         //distances
         private const float attackDistance = 20f; //for now
-        private const float maxStalkDistance = 80f; //for now
+        private const float maxStalkDistance = 100f; //for now
+
+        //states
+        private bool toTeleport = false;
+        private bool toHide = false;
+        private bool toFreeze = false;
 
         //cover
         //private List<Vector3> coverPositions = new List<Vector3>();
         //private Vector3? coverPosition = null;
-        private bool toTeleport = false;
-        private bool toHide = false;
+
 
         //pathfinding
         List<Vector3> path;
@@ -62,11 +67,13 @@ namespace ImprovedCougar
 
         //time
         float timeSinceLastPath = 0f;
-        float recalcInterval = 0.5f;
+        float recalcInterval = 1f;
 
         float timeSinceHiding = 0f;
-        float timeToComeOut = 2f;
+        float timeToComeOut = 5f;
 
+        float timeSinceFreezing = 0f;
+      
         public override void Initialize(BaseAi ai, TimeOfDay timeOfDay, SpawnRegion spawnRegion)
         {
             base.Initialize(ai, timeOfDay, spawnRegion);
@@ -90,6 +97,9 @@ namespace ImprovedCougar
                     return false;
                 case (AiMode)CustomCougarAiMode.Hide:
                     ProcessHiding();
+                    return false;
+                case (AiMode)CustomCougarAiMode.Freeze:
+                    ProcessFreezing();
                     return false;
                 default:
                     return base.ProcessCustom();
@@ -115,30 +125,30 @@ namespace ImprovedCougar
                     StartStalkingPathfinding();
                 }
 
-                /***
+                Main.Logger.Log($"Cougar Distance: {currentDistance}", ComplexLogger.FlaggedLoggingLevel.Debug);
+
                 if (CougarCanSeePlayerLooking(player, cougar))
                 {
-                    //we could teleport here too
-                    if (currentDistance >= 30f) currentStalkSpeed = spottedStalkSpeed;
-                    else { } //change state to freeze & flee? 
-                } ***/
 
-                Main.Logger.Log($"Cougar position: {currentCougarPosition.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
-                Main.Logger.Log($"Player position: {playerPosition.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    if (currentDistance >= 35f)
+                    {
+                        Main.Logger.Log("Cougar can see player looking, running faster to cover.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                        currentStalkSpeed = spottedStalkSpeed;
+                    }
+                    else //change state to freeze & flee?
+                    {
+                        SetAiMode((AiMode)CustomCougarAiMode.Freeze);
+                    } 
+                }
 
                 if (path != null && currentIndex < path.Count)
                 {
 
                     Vector3 target = path[currentIndex];
 
-                    //the idea here is that before moving to the next point on the path, validate if it's still in cover. If the player moved enough it probably isn't, so return and recalculate next frame
 
-                    
-                    Main.Logger.Log($"Moving to position: {target.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    //Main.Logger.Log($"Moving to position: {target.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
-                    //while the cougar is moving however, the player could move and the position it is currently moving to may be
-                    //invalid and there is nothing we can do until the cougar gets there. Unless we have control over the move agent
-                    //and can tell it to stop and do the same thing as the above but during movement
                     mBaseAi.StartPath(target, currentStalkSpeed);
 
                     if (!mBaseAi.CanPathfindToPosition(target))
@@ -148,9 +158,9 @@ namespace ImprovedCougar
 
                     if (Vector3.Distance(cougar.position, target) < reachThreshold)
                     {
-                        if(toHide && currentIndex != 0) 
+                        currentStalkSpeed = baseStalkSpeed;
+                        if (toHide && currentIndex != 0) 
                         {
-                            currentStalkSpeed = baseStalkSpeed;
                             SetAiMode((AiMode)CustomCougarAiMode.Hide);
                         }
                         currentIndex++;
@@ -212,6 +222,32 @@ namespace ImprovedCougar
             }
         }
 
+        protected void ProcessFreezing()
+        {
+            Transform player = GameManager.GetPlayerTransform();
+            Transform cougar = mBaseAi.transform;
+
+            //wait a few seconds to flee
+
+            timeSinceFreezing += Time.deltaTime;
+            if (timeSinceFreezing > 4f)
+            {
+
+                if (IsPlayerFacingCougar(player, cougar))
+                {
+                    Main.Logger.Log("Cougar is freezing for too long and player is looking. Gonna flee...", ComplexLogger.FlaggedLoggingLevel.Debug);
+
+                    //change state here  
+                    //SetAiMode(AiMode.Flee);
+                }
+                else
+                {
+                    Main.Logger.Log("Cougar is freezing for too long and player is not looking. Back to stalking flee...", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    SetAiMode(AiMode.Stalking);
+                }
+            }
+        }
+
         protected void BeginStalking()
         {
             Transform player = GameManager.GetPlayerTransform();
@@ -241,6 +277,18 @@ namespace ImprovedCougar
 
             Main.Logger.Log("Hiding in cover", ComplexLogger.FlaggedLoggingLevel.Debug);
             //InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is moving to cover!");
+
+        }
+
+        protected void BeginFreezing()
+        {
+            Transform player = GameManager.GetPlayerTransform();
+            Transform cougar = mBaseAi.transform;
+
+            timeSinceFreezing = 0f;
+            mBaseAi.MoveAgentStop();
+            toFreeze = false;
+            Main.Logger.Log("Cougar is freezing!", ComplexLogger.FlaggedLoggingLevel.Debug);
 
         }
 
