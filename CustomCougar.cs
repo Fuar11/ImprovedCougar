@@ -277,27 +277,20 @@ namespace ImprovedCougar
             Transform player = GameManager.GetPlayerTransform();
             Transform cougar = mBaseAi.transform;
             float currentDistance = Vector3.Distance(cougar.position, player.position);
+            float pointDistance = Vector3.Distance(cougar.position, spawnPosition);
+
 
             //if still in territory fall back not too far and go into observe state or keep stalking
             //else fall back all the way into territory and go into observe state
 
-            Main.Logger.Log($"Cougar is at {cougar.position.ToString()} and is retreating to spawn position {spawnPosition.ToString()} with a speed of {currentStalkSpeed}.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                mBaseAi.StartPath(spawnPosition, currentStalkSpeed);
 
-            mBaseAi.StartPath(spawnPosition, currentStalkSpeed);
-
-            if (currentDistance >= 65f)
-            {
-                if (!CougarCanSeePlayerLooking(player, cougar))
-                {
-                    if (isInTerritory) mBaseAi.SetAiMode(AiMode.Stalking);
-                    else TeleportCougarToPosition(spawnPosition, cougar);
-                }
-                else if (Vector3.Distance(cougar.position, spawnPosition) < reachThreshold)
+                if (Vector3.Distance(cougar.position, spawnPosition) < reachThreshold)
                 {
                     Main.Logger.Log("Cougar has reached it's territory, going back to wandering", ComplexLogger.FlaggedLoggingLevel.Debug);
                     mBaseAi.SetAiMode(AiMode.Wander);
                 }
-            }
+            
         }
 
         protected void BeginStalking()
@@ -348,7 +341,6 @@ namespace ImprovedCougar
         {
             currentStalkSpeed = baseStalkSpeed;
             Main.Logger.Log("Cougar is retreating!", ComplexLogger.FlaggedLoggingLevel.Debug);
-            mBaseAi.MoveAgentStop();
         }
 
         //checks to see if the player is facing the cougar regardless of line of sight
@@ -500,6 +492,10 @@ namespace ImprovedCougar
                     LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, setting overrideState to Stalking.");
                     overrideState = AiAnimationState.Stalking;
                     return false;
+                case (AiMode)CustomCougarAiMode.Freeze:
+                    LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, setting overrideState to Stalking.");
+                    overrideState = AiAnimationState.Stalking;
+                    return false;
                 default:
                     LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, deffering");
                     overrideState = AiAnimationState.Invalid;
@@ -507,6 +503,24 @@ namespace ImprovedCougar
             }
         }
 
+        protected override bool IsMoveStateCustom(AiMode mode, out bool isMoveState)
+        {
+            switch (mode)
+            {
+                case (AiMode)CustomCougarAiMode.Freeze:
+                    isMoveState = false;
+                    return false;
+                case (AiMode) CustomCougarAiMode.Retreat:
+                    isMoveState = true;
+                    return false;
+                case (AiMode)CustomCougarAiMode.Hide:
+                    isMoveState = false;
+                    return false;
+                default:
+                    isMoveState = false;    
+                    return base.IsMoveStateCustom(mode, out isMoveState);
+            }
+        }
         float GetCougarHeight(Transform cougar)
         {
             Renderer[] renderers = cougar.GetComponentsInChildren<Renderer>();
