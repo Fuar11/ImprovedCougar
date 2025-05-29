@@ -59,6 +59,7 @@ namespace ImprovedCougar
         private bool toTeleport = false;
         private bool toHide = false;
         private bool toFreeze = false;
+        private bool isInvisible = false;
 
         //pathfinding
         List<Vector3> path;
@@ -70,7 +71,7 @@ namespace ImprovedCougar
 
         //time
         float timeSinceLastPath = 0f;
-        float recalcInterval = 1f;
+        float recalcInterval = 1.5f;
 
         float timeSinceHiding = 0f;
         float timeToComeOut = 5f;
@@ -180,7 +181,6 @@ namespace ImprovedCougar
 
                         if (!IsPointStillCover(target, mBaseAi.m_CurrentTarget.GetEyePos(), Utils.m_PhysicalCollisionLayerMask))
                         {
-                            mBaseAi.MoveAgentStop();
                             //Main.Logger.Log($"Current point {target.ToString()} is invalid at index {currentIndex}. Repathing.", ComplexLogger.FlaggedLoggingLevel.Debug);
                             pathBroken = true;
                             toTeleport = true;
@@ -319,10 +319,17 @@ namespace ImprovedCougar
             timeSinceHiding = 0f;
             mBaseAi.MoveAgentStop();
             toHide = false;
+            ToggleInvisibility();
 
             Main.Logger.Log("Hiding in cover", ComplexLogger.FlaggedLoggingLevel.Debug);
             //InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is moving to cover!");
 
+        }
+
+        protected void StopHiding()
+        {
+            Main.Logger.Log("Leaving cover", ComplexLogger.FlaggedLoggingLevel.Debug);
+            ToggleInvisibility();
         }
 
         protected void BeginFreezing()
@@ -454,73 +461,7 @@ namespace ImprovedCougar
             return null;
         }
 
-        protected override bool EnterAiModeCustom(AiMode mode)
-        {
-            switch (mode)
-            {
-                case (AiMode)CustomCougarAiMode.Hide:
-                    LogVerbose($"EnterAiModeCustom: mode is {mode}, routing to BeginHiding");
-                    BeginHiding();
-                    return false;
-                case AiMode.Stalking:
-                    LogVerbose($"EnterAiModeCustom: mode is {mode}, routing to BeginStalking");
-                    BeginStalking();
-                    return false;
-                case (AiMode)CustomCougarAiMode.Freeze:
-                    LogVerbose($"EnterAiModeCustom: mode is {mode}, routing to BeginFreezing");
-                    BeginFreezing();
-                    return false;
-                case (AiMode)CustomCougarAiMode.Retreat:
-                    LogVerbose($"EnterAiModeCustom: mode is {mode}, routing to BeginRetreating");
-                    BeginRetreating();
-                    return false;
-                default:
-                    LogVerbose($"EnterAiModeCustom: mode is {mode}, deferring.");
-                    return true;
-            }
-        }
-
-        protected override bool GetAiAnimationStateCustom(AiMode mode, out AiAnimationState overrideState)
-        {
-            switch (mode)
-            {
-                case (AiMode)CustomCougarAiMode.Hide:
-                    LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, setting overrideState to Stalking.");
-                    overrideState = AiAnimationState.Stalking;
-                    return false;
-                case (AiMode)CustomCougarAiMode.Retreat:
-                    LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, setting overrideState to Stalking.");
-                    overrideState = AiAnimationState.Stalking;
-                    return false;
-                case (AiMode)CustomCougarAiMode.Freeze:
-                    LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, setting overrideState to Stalking.");
-                    overrideState = AiAnimationState.Stalking;
-                    return false;
-                default:
-                    LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, deffering");
-                    overrideState = AiAnimationState.Invalid;
-                    return true;
-            }
-        }
-
-        protected override bool IsMoveStateCustom(AiMode mode, out bool isMoveState)
-        {
-            switch (mode)
-            {
-                case (AiMode)CustomCougarAiMode.Freeze:
-                    isMoveState = false;
-                    return false;
-                case (AiMode) CustomCougarAiMode.Retreat:
-                    isMoveState = true;
-                    return false;
-                case (AiMode)CustomCougarAiMode.Hide:
-                    isMoveState = false;
-                    return false;
-                default:
-                    isMoveState = false;    
-                    return base.IsMoveStateCustom(mode, out isMoveState);
-            }
-        }
+        
         float GetCougarHeight(Transform cougar)
         {
             Renderer[] renderers = cougar.GetComponentsInChildren<Renderer>();
@@ -577,6 +518,117 @@ namespace ImprovedCougar
             Main.Logger.Log($"Teleporting cougar to position {pos.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
         }
+
+        private void ToggleInvisibility()
+        {
+
+            GameObject cougar = mBaseAi.gameObject.transform.GetChild(0).gameObject;
+
+            if(cougar == null)
+            {
+                Main.Logger.Log("Cougar rig is null...", ComplexLogger.FlaggedLoggingLevel.Error);
+                return;
+            }
+
+            if (isInvisible)
+            {
+                Main.Logger.Log("No more invisible...", ComplexLogger.FlaggedLoggingLevel.Error);
+                cougar.active = true;
+                isInvisible = false;
+            }
+            else
+            {
+                Main.Logger.Log("I am now invisible!!!", ComplexLogger.FlaggedLoggingLevel.Error);
+                cougar.active = false;
+                isInvisible = true;
+            }
+
+        }
+
+        //overrides
+
+        protected override bool EnterAiModeCustom(AiMode mode)
+        {
+            switch (mode)
+            {
+                case (AiMode)CustomCougarAiMode.Hide:
+                    LogVerbose($"EnterAiModeCustom: mode is {mode}, routing to BeginHiding");
+                    BeginHiding();
+                    return false;
+                case AiMode.Stalking:
+                    LogVerbose($"EnterAiModeCustom: mode is {mode}, routing to BeginStalking");
+                    BeginStalking();
+                    return false;
+                case (AiMode)CustomCougarAiMode.Freeze:
+                    LogVerbose($"EnterAiModeCustom: mode is {mode}, routing to BeginFreezing");
+                    BeginFreezing();
+                    return false;
+                case (AiMode)CustomCougarAiMode.Retreat:
+                    LogVerbose($"EnterAiModeCustom: mode is {mode}, routing to BeginRetreating");
+                    BeginRetreating();
+                    return false;
+                default:
+                    LogVerbose($"EnterAiModeCustom: mode is {mode}, deferring.");
+                    return true;
+            }
+        }
+
+        protected override bool ExitAiModeCustom(AiMode mode)
+        {
+            switch (mode)
+            {
+                case (AiMode)CustomCougarAiMode.Hide:
+                    LogVerbose($"ExitAiModeCustom: mode is {mode}, routing to StopHiding");
+                    StopHiding();
+                    return false;
+                default:
+                    LogVerbose($"ExitAiModeCustom: mode is {mode}, deferring.");
+                    return true;
+            }
+        }
+
+        protected override bool GetAiAnimationStateCustom(AiMode mode, out AiAnimationState overrideState)
+        {
+            switch (mode)
+            {
+                case (AiMode)CustomCougarAiMode.Hide:
+                    LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, setting overrideState to Stalking.");
+                    overrideState = AiAnimationState.Stalking;
+                    return false;
+                case (AiMode)CustomCougarAiMode.Retreat:
+                    LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, setting overrideState to Stalking.");
+                    overrideState = AiAnimationState.Stalking;
+                    return false;
+                case (AiMode)CustomCougarAiMode.Freeze:
+                    LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, setting overrideState to Stalking.");
+                    overrideState = AiAnimationState.Stalking;
+                    return false;
+                default:
+                    LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, deffering");
+                    overrideState = AiAnimationState.Invalid;
+                    return true;
+            }
+        }
+
+        protected override bool IsMoveStateCustom(AiMode mode, out bool isMoveState)
+        {
+            switch (mode)
+            {
+                case (AiMode)CustomCougarAiMode.Freeze:
+                    isMoveState = false;
+                    return false;
+                case (AiMode)CustomCougarAiMode.Retreat:
+                    isMoveState = true;
+                    return false;
+                case (AiMode)CustomCougarAiMode.Hide:
+                    isMoveState = false;
+                    return false;
+                default:
+                    isMoveState = false;
+                    return base.IsMoveStateCustom(mode, out isMoveState);
+            }
+        }
+
 
     }
 }
