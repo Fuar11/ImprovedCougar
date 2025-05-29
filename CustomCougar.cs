@@ -7,16 +7,9 @@ using Il2Cpp;
 using ExpandedAiFramework;
 using Il2CppTLD.AI;
 using UnityEngine;
-using Il2CppRewired;
-using Il2CppTMPro;
 using UnityEngine.AI;
 using ImprovedCougar.Pathfinding;
-using System.Drawing;
 using Color = UnityEngine.Color;
-using static Il2Cpp.UIAtlas;
-using static UnityEngine.GraphicsBuffer;
-using UnityEngine.Tilemaps;
-using Il2CppSystem.Xml;
 
 namespace ImprovedCougar
 {
@@ -82,9 +75,9 @@ namespace ImprovedCougar
         float timeSinceFreezing = 0f;
         float timeToFreezeFor = 8f;
 
-        public override void Initialize(BaseAi ai, TimeOfDay timeOfDay, SpawnRegion spawnRegion)
+        public override void Initialize(BaseAi ai, TimeOfDay timeOfDay, SpawnRegion spawnRegion, SpawnModDataProxy proxy)
         {
-            base.Initialize(ai, timeOfDay, spawnRegion);
+            base.Initialize(ai, timeOfDay, spawnRegion, proxy);
             mBaseAi.m_DefaultMode = AiMode.Wander;
             mBaseAi.m_StartMode = AiMode.Wander;
             baseStalkSpeed = mBaseAi.m_StalkSpeed + 2;
