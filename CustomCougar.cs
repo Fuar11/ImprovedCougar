@@ -44,16 +44,17 @@ namespace ImprovedCougar
         private bool isInTerritory = true;
 
         //speeds
-        private float currentStalkSpeed = 0f;
+        private float currentSpeed = 0f;
 
         private float baseStalkSpeed = 0f;
         private float closeStalkSpeed = 0f;
-        private float spottedStalkSpeed = 0f;
         private float attackSpeed = 0f;
+
+        private float spottedRetreatSpeed = 0f;
 
         //distances
         private const float attackDistance = 20f; //for now
-        private const float maxStalkDistance = 100f; //for now
+        private const float maxStalkDistance = 120f; //for now
 
         //states
         private bool toTeleport = false;
@@ -63,11 +64,13 @@ namespace ImprovedCougar
 
         //pathfinding
         List<Vector3> path;
+        Vector3 lastPosition;
         int currentIndex = 0;
         float reachThreshold = 0.5f;
         bool pathBroken = false;
 
-        Vector3 spawnPosition = Vector3.zero; //temporary
+        Vector3 spawnPosition = Vector3.zero; //temporary territory node position
+        Vector3 retreatPosition;
 
         //time
         float timeSinceLastPath = 0f;
@@ -77,6 +80,7 @@ namespace ImprovedCougar
         float timeToComeOut = 5f;
 
         float timeSinceFreezing = 0f;
+        float timeToFreezeFor = 8f;
 
         public override void Initialize(BaseAi ai, TimeOfDay timeOfDay, SpawnRegion spawnRegion)
         {
@@ -85,7 +89,7 @@ namespace ImprovedCougar
             mBaseAi.m_StartMode = AiMode.Wander;
             baseStalkSpeed = mBaseAi.m_StalkSpeed + 2;
             closeStalkSpeed = mBaseAi.m_StalkSpeed;
-            spottedStalkSpeed = mBaseAi.m_ChasePlayerSpeed;
+            spottedRetreatSpeed = mBaseAi.m_StalkSpeed - 1;
             attackSpeed = Settings.CustomSettings.settings.cougarSpeed; //i think this will work idk
             //this is temporary
             spawnPosition = mBaseAi.transform.position;
@@ -140,16 +144,19 @@ namespace ImprovedCougar
 
                 if (CougarCanSeePlayerLooking(player, cougar))
                 {
+                    if (currentDistance >= 70f)
+                    {
+                        timeToFreezeFor = 20f;
+                    }
+                    else if (currentDistance <= 70f && currentDistance >= 30)
+                    {
+                        timeToFreezeFor = 7f;
+                    }
+                    else timeToFreezeFor = 5f;
 
-                    if (currentDistance >= 35f)
-                    {
-                        Main.Logger.Log("Cougar can see player looking, running faster to cover.", ComplexLogger.FlaggedLoggingLevel.Debug);
-                        currentStalkSpeed = spottedStalkSpeed;
-                    }
-                    else //change state to freeze & flee?
-                    {
-                        SetAiMode((AiMode)CustomCougarAiMode.Freeze);
-                    }
+                    Main.Logger.Log($"Cougar can see player looking, freezing for {timeToFreezeFor} seconds and assessing.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    toHide = true;
+                    SetAiMode((AiMode)CustomCougarAiMode.Freeze);
                 }
 
                 if (path != null && currentIndex < path.Count)
@@ -159,7 +166,7 @@ namespace ImprovedCougar
 
                     //Main.Logger.Log($"Moving to position: {target.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
-                    mBaseAi.StartPath(target, currentStalkSpeed);
+                    mBaseAi.StartPath(target, currentSpeed);
 
                     if (!mBaseAi.CanPathfindToPosition(target))
                     {
@@ -168,15 +175,21 @@ namespace ImprovedCougar
 
                     if (Vector3.Distance(cougar.position, target) < reachThreshold)
                     {
-                        currentStalkSpeed = baseStalkSpeed;
-                        if (toHide && currentIndex != 0)
+                        if(currentIndex != 0 && target != player.position)
+                        {
+                            lastPosition = target;
+                        }
+
+                        currentSpeed = baseStalkSpeed;
+                        if (toHide && currentIndex != 0) //this may not be needed but i'm keeping here just in case
                         {
                             SetAiMode((AiMode)CustomCougarAiMode.Hide);
                         }
                         currentIndex++;
                     }
-                    else //still moving towards node
+                    else //still moving towards node, will revisit this stuff when it becomes relevant again
                     {
+                        /*** 
                         if (currentIndex == 0 || target == playerPosition) return;
 
                         if (!IsPointStillCover(target, mBaseAi.m_CurrentTarget.GetEyePos(), Utils.m_PhysicalCollisionLayerMask))
@@ -191,7 +204,7 @@ namespace ImprovedCougar
                         {
                             TeleportCougarToPosition(target, cougar);
                             return;
-                        }
+                        } ***/
 
                     }
                 }
@@ -200,12 +213,11 @@ namespace ImprovedCougar
                     //if no path found it probably means there is no cover nearby, so it isn't stealthy enough to keep stalking. If close enough keep going 
 
                     //i can probably change this to detect for allowed areas or something
-
                     Main.Logger.Log("Cougar is in open area, maybe!", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                     if (currentDistance <= 35)
                     {
-                        mBaseAi.StartPath(playerPosition, currentStalkSpeed);
+                        mBaseAi.StartPath(playerPosition, currentSpeed);
                     }
                     else
                     {
@@ -240,10 +252,6 @@ namespace ImprovedCougar
                     SetAiMode(AiMode.Stalking);
                 }
             }
-            else
-            {
-                //make the cougar invisible! this use case is most likely to involve the player walking backwards, or moving towards the hiding cougar
-            }
         }
 
         protected void ProcessFreezing()
@@ -254,20 +262,24 @@ namespace ImprovedCougar
             //wait a few seconds to flee
 
             timeSinceFreezing += Time.deltaTime;
-            if (timeSinceFreezing > 5f)
+            if (timeSinceFreezing > timeToFreezeFor) //add some slight movements here, a cougar freezing isn't completely still, maybe, fact check this
             {
 
+                //add more complex behavior decision making here
                 if (IsPlayerFacingCougar(player, cougar))
                 {
                     Main.Logger.Log("Cougar is freezing for too long and player is looking. Gonna flee...", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                     //change state here  
+                    currentSpeed = spottedRetreatSpeed;
+                    retreatPosition = lastPosition != Vector3.zero ? lastPosition : (Vector3)FindRetreatCoverPoint(cougar, player, 50f, Utils.m_PhysicalCollisionLayerMask);
                     SetAiMode((AiMode)CustomCougarAiMode.Retreat);
                 }
                 else
                 {
-                    Main.Logger.Log("Cougar is freezing for too long and player is not looking. Back to stalking flee...", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    SetAiMode(AiMode.Stalking);
+                    Main.Logger.Log("Cougar is freezing for too long and player is not looking. Teleporting cougar to retreat point and hiding...", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    TeleportCougarToPosition(retreatPosition, cougar);
+                    SetAiMode((AiMode)CustomCougarAiMode.Hide);
                 }
             }
         }
@@ -283,14 +295,28 @@ namespace ImprovedCougar
             //if still in territory fall back not too far and go into observe state or keep stalking
             //else fall back all the way into territory and go into observe state
 
-                mBaseAi.StartPath(spawnPosition, currentStalkSpeed);
+            if (retreatPosition == Vector3.zero)
+            {
+                retreatPosition = spawnPosition;
+                Main.Logger.Log("Retreat position is invalid. Falling back to spawn location instead", ComplexLogger.FlaggedLoggingLevel.Debug);
+            }
+            mBaseAi.StartPath(retreatPosition, currentSpeed);
 
-                if (Vector3.Distance(cougar.position, spawnPosition) < reachThreshold)
+            if (Vector3.Distance(cougar.position, retreatPosition) < reachThreshold)
+            {
+                if (retreatPosition == spawnPosition)
                 {
                     Main.Logger.Log("Cougar has reached it's territory, going back to wandering", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    mBaseAi.SetAiMode(AiMode.Wander);
+                    mBaseAi.SetAiMode(AiMode.Stalking); //temporary until we get wander/patrol working
                 }
-            
+                else
+                {
+                    Main.Logger.Log("Cougar has reached it's retreat position, going to hide.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    mBaseAi.SetAiMode((AiMode)CustomCougarAiMode.Hide);
+                }
+
+            }
+
         }
 
         protected void BeginStalking()
@@ -302,7 +328,7 @@ namespace ImprovedCougar
 
             mBaseAi.MoveAgentStop();
             mBaseAi.m_CurrentTarget = GameManager.GetPlayerManagerComponent().m_AiTarget;
-            currentStalkSpeed = baseStalkSpeed;
+            currentSpeed = baseStalkSpeed;
             toTeleport = false;
 
             StartStalkingPathfinding();
@@ -346,7 +372,7 @@ namespace ImprovedCougar
 
         protected void BeginRetreating()
         {
-            currentStalkSpeed = baseStalkSpeed;
+            currentSpeed = baseStalkSpeed;
             Main.Logger.Log("Cougar is retreating!", ComplexLogger.FlaggedLoggingLevel.Debug);
         }
 
@@ -427,6 +453,52 @@ namespace ImprovedCougar
             return coverPoints;
         }
 
+        public Vector3? FindRetreatCoverPoint(Transform cougar, Transform player, float maxDistance, LayerMask coverObstructionMask)
+        {
+            Vector3 retreatDirection = (cougar.position - player.position).normalized; // opposite of stalking
+            HashSet<Collider> cougarColliders = new HashSet<Collider>(cougar.GetComponentsInChildren<Collider>());
+            RaycastHit[] hits = Physics.SphereCastAll(cougar.position, 70f, retreatDirection, maxDistance, coverObstructionMask);
+
+            Vector3 cougarEye = mBaseAi.GetEyePos();
+            Vector3 playerEye = mBaseAi.m_CurrentTarget.GetEyePos();
+            float cougarHeight = GetCougarHeight(cougar);
+
+            Vector3? bestCover = null;
+            float closestDistance = float.MaxValue;
+
+            foreach (RaycastHit hit in hits)
+            {
+                Collider col = hit.collider;
+                if (cougarColliders.Contains(col)) continue;
+                if (col.bounds.Contains(cougar.position)) continue;
+                if (col.bounds.size.y < cougarHeight) continue;
+
+                Vector3 dirToCollider = (col.bounds.center - playerEye).normalized;
+                float distanceToCollider = Vector3.Distance(playerEye, col.bounds.center);
+
+                if (Physics.Raycast(playerEye, dirToCollider, out RaycastHit losHit, distanceToCollider, coverObstructionMask))
+                {
+                    if (losHit.collider == col)
+                    {
+                        Vector3 dirFromPlayer = (col.bounds.center - playerEye).normalized;
+                        Vector3 roughCoverPoint = col.bounds.center + dirFromPlayer * col.bounds.extents.magnitude * 0.2f;
+
+                        Vector3? finalCoverPoint = ForcePointToGround(roughCoverPoint, col, 30f, 2f, coverObstructionMask, 30f);
+
+                        Vector3 coverPoint = finalCoverPoint ?? roughCoverPoint;
+                        float distToCougar = Vector3.Distance(cougar.position, coverPoint);
+
+                        if (distToCougar < closestDistance)
+                        {
+                            closestDistance = distToCougar;
+                            bestCover = coverPoint;
+                        }
+                    }
+                }
+            }
+
+            return bestCover;
+        }
         bool IsPointStillCover(Vector3 coverPoint, Vector3 playerEye, LayerMask coverMask)
         {
             Vector3 direction = (coverPoint - playerEye).normalized;
@@ -461,7 +533,6 @@ namespace ImprovedCougar
             return null;
         }
 
-        
         float GetCougarHeight(Transform cougar)
         {
             Renderer[] renderers = cougar.GetComponentsInChildren<Renderer>();
@@ -524,7 +595,7 @@ namespace ImprovedCougar
 
             GameObject cougar = mBaseAi.gameObject.transform.GetChild(0).gameObject;
 
-            if(cougar == null)
+            if (cougar == null)
             {
                 Main.Logger.Log("Cougar rig is null...", ComplexLogger.FlaggedLoggingLevel.Error);
                 return;
