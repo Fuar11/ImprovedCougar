@@ -46,13 +46,15 @@ namespace ImprovedCougar
         private float spottedRetreatSpeed = 0f;
 
         //distances
-        private const float attackDistance = 20f; //for now
+        private const float attackDistance = 25f; //for now
         private const float maxStalkDistance = 120f; //for now
+        private const float closeDistance = 35f;
 
         //states
         private bool toTeleport = false;
         private bool toHide = false;
         private bool toFreeze = false;
+        private bool stopFreezing = false;
         private bool isInvisible = false;
 
         //pathfinding
@@ -152,6 +154,11 @@ namespace ImprovedCougar
                     SetAiMode((AiMode)CustomCougarAiMode.Freeze);
                 }
 
+                if(currentDistance <= closeDistance)
+                {
+                    currentSpeed = closeStalkSpeed;
+                }
+
                 if (path != null && currentIndex < path.Count)
                 {
 
@@ -212,17 +219,22 @@ namespace ImprovedCougar
                     {
                         mBaseAi.StartPath(playerPosition, currentSpeed);
                     }
+                    /***
                     else
                     {
                         mBaseAi.SetAiMode((AiMode)CustomCougarAiMode.Retreat);
-                    }
+                    } ***/
 
 
                 }
             }
             else
             {
-                //AiModeSet to attack! or something like that
+                
+
+                //needs obvious work
+                Main.Logger.Log("Attacking!", ComplexLogger.FlaggedLoggingLevel.Debug);
+                mBaseAi.SetAiMode(AiMode.Attack);
             }
 
         }
@@ -255,7 +267,7 @@ namespace ImprovedCougar
             //wait a few seconds to flee
 
             timeSinceFreezing += Time.deltaTime;
-            if (timeSinceFreezing > timeToFreezeFor) //add some slight movements here, a cougar freezing isn't completely still, maybe, fact check this
+            if (timeSinceFreezing > timeToFreezeFor || stopFreezing) //add some slight movements here, a cougar freezing isn't completely still, maybe, fact check this
             {
 
                 //add more complex behavior decision making here
@@ -607,6 +619,11 @@ namespace ImprovedCougar
                 isInvisible = true;
             }
 
+        }
+
+        private void DoSomethingWithAudio()
+        {
+            
         }
 
         //overrides
