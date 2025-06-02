@@ -11,21 +11,6 @@ namespace ImprovedCougar.Patches
     internal class CougarPatches
     {
 
-        [HarmonyPatch(nameof(BaseAi), nameof(BaseAi.Awake))]
-
-        public class TweakCougarSettings
-        {
-            //this will be changed
-            public static void Postfix(BaseAi __instance)
-            {
-                if(__instance.m_AiSubType == AiSubType.Cougar)
-                {
-                    __instance.m_MaxHP = CustomSettings.settings.cougarHP;
-                    __instance.m_ChasePlayerSpeed = CustomSettings.settings.cougarSpeed;
-                }
-            }
-        }
-
         [HarmonyPatch(nameof(AiCougar), nameof(AiCougar.EnterDead))]
 
         public class WhenKilled

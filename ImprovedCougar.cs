@@ -1,12 +1,15 @@
 using ComplexLogger;
 using Il2Cpp;
 using ExpandedAiFramework;
+using UnityEngine.Rendering.PostProcessing;
+using UnityEngine;
 
 namespace ImprovedCougar
 {
     public class Main : MelonMod
     {
         internal static ComplexLogger<Main> Logger = new();
+        internal static CustomCougarManager CustomCougarManager;
 
         public override void OnInitializeMelon()
         {
@@ -21,13 +24,46 @@ namespace ImprovedCougar
             return EAFManager.Instance.RegisterSpawnableAi(typeof(CustomCougar), CustomCougar.CustomCougarSettings);
         }
 
-        public override void OnUpdate()
+        public override void OnSceneWasInitialized(int buildIndex, string sceneName)
         {
-            if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.UpArrow))
+            if (SceneUtilities.IsScenePlayable(sceneName))
             {
-                GameManager.GetCougarManager().enabled = true;
+                GameObject ccm = new() { name = "DynamicTreeObject", layer = vp_Layer.Default };
+                UnityEngine.Object.Instantiate(ccm, GameManager.GetVpFPSPlayer().transform);
+                GameObject.DontDestroyOnLoad(ccm);
+                CustomCougarManager ??= ccm.AddComponent<CustomCougarManager>();
+
+                AddNewSpawnRegions(sceneName);
+
             }
+
         }
+
+        private void AddNewSpawnRegions(string sceneName)
+        {
+
+            GameObject spawnRegionObj = new() { layer = vp_Layer.TriggerIgnoreRaycast };
+
+            if (sceneName == "LakeRegion")
+            {
+
+                string path = "Design/Cougar/AttackZoneArea_a";
+                GameObject parent = GameObject.Find(path);
+                SpawnRegion baseSpawnRegion = GameObject.Find(path + "/CougarTerritoryZone_a_T1").transform.GetChild(0).GetComponent<SpawnRegion>();
+                spawnRegionObj.name = "ModCougarTerritoryZone1";
+                Vector3 pos = new Vector3(164.56f, 1.91f, 11.00f);
+                UnityEngine.Object.Instantiate(spawnRegionObj, parent.transform);
+                Logger.Log("Added spawnregion object to scene", FlaggedLoggingLevel.Debug);
+                SpawnRegion sr = spawnRegionObj.AddComponent<SpawnRegion>();
+                Logger.Log($"Added spawnregion component to object: {sr != null}", FlaggedLoggingLevel.Debug);
+                sr = baseSpawnRegion;
+                sr.transform.position = pos;
+
+            }
+
+
+        }
+
 
     }
 }

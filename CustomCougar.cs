@@ -329,7 +329,9 @@ namespace ImprovedCougar
             Transform player = GameManager.GetPlayerTransform();
             Transform cougar = mBaseAi.transform;
 
-            //do something to make the Cougar shut up here
+            mBaseAi.m_StalkingAudioID = 0; //probably stops the initial growl
+            mBaseAi.m_StalkingAudio = "";
+            mBaseAi.m_EnterStalkingAudio = "";
 
             mBaseAi.MoveAgentStop();
             mBaseAi.m_CurrentTarget = GameManager.GetPlayerManagerComponent().m_AiTarget;
