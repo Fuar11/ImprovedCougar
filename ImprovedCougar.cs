@@ -28,7 +28,7 @@ namespace ImprovedCougar
         {
             if (SceneUtilities.IsScenePlayable(sceneName))
             {
-                GameObject ccm = new() { name = "DynamicTreeObject", layer = vp_Layer.Default };
+                GameObject ccm = new() { name = "CustomCougarManager", layer = vp_Layer.Default };
                 UnityEngine.Object.Instantiate(ccm, GameManager.GetVpFPSPlayer().transform);
                 GameObject.DontDestroyOnLoad(ccm);
                 CustomCougarManager ??= ccm.AddComponent<CustomCougarManager>();
@@ -42,7 +42,7 @@ namespace ImprovedCougar
         private void AddNewSpawnRegions(string sceneName)
         {
 
-            GameObject spawnRegionObj = new() { layer = vp_Layer.TriggerIgnoreRaycast };
+            GameObject baseSpawnRegionObj = new() { layer = vp_Layer.TriggerIgnoreRaycast };
 
             if (sceneName == "LakeRegion")
             {
@@ -50,14 +50,14 @@ namespace ImprovedCougar
                 string path = "Design/Cougar/AttackZoneArea_a";
                 GameObject parent = GameObject.Find(path);
                 SpawnRegion baseSpawnRegion = GameObject.Find(path + "/CougarTerritoryZone_a_T1").transform.GetChild(0).GetComponent<SpawnRegion>();
-                spawnRegionObj.name = "ModCougarTerritoryZone1";
+                baseSpawnRegionObj.name = "ModCougarTerritoryZone1";
                 Vector3 pos = new Vector3(164.56f, 1.91f, 11.00f);
-                UnityEngine.Object.Instantiate(spawnRegionObj, parent.transform);
+                GameObject newSpawnRegionObj = UnityEngine.Object.Instantiate(baseSpawnRegionObj, parent.transform);
                 Logger.Log("Added spawnregion object to scene", FlaggedLoggingLevel.Debug);
-                SpawnRegion sr = spawnRegionObj.AddComponent<SpawnRegion>();
+                SpawnRegion sr = newSpawnRegionObj.AddComponent<SpawnRegion>();
                 Logger.Log($"Added spawnregion component to object: {sr != null}", FlaggedLoggingLevel.Debug);
                 sr = baseSpawnRegion;
-                sr.transform.position = pos;
+                newSpawnRegionObj.transform.position = pos;
 
             }
 
