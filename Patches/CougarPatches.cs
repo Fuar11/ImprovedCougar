@@ -25,5 +25,17 @@ namespace ImprovedCougar.Patches
                 //this might backfire when the days counter runs out but I'm not sure
             }
         }
+
+        [HarmonyPatch(nameof(CougarManager), nameof(CougarManager.MaybeSetThreatLevel))]
+
+        public class DisableOtherTerritory
+        {
+
+            public static void Prefix(CougarManager __instance, ref int level)
+            {
+                level = 1;
+            }
+
+        }
     }
 }

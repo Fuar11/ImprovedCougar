@@ -33,36 +33,54 @@ namespace ImprovedCougar
                 GameObject.DontDestroyOnLoad(ccm);
                 CustomCougarManager ??= ccm.AddComponent<CustomCougarManager>();
 
-                AddNewSpawnRegions(sceneName);
+                UpdateCougarTerritory(sceneName);
 
             }
 
         }
 
-        private void AddNewSpawnRegions(string sceneName)
+        private void UpdateCougarTerritory(string scene)
         {
 
-            GameObject baseSpawnRegionObj = new() { layer = vp_Layer.TriggerIgnoreRaycast };
-
-            if (sceneName == "LakeRegion")
+            if(scene == "LakeRegion")
             {
 
-                string path = "Design/Cougar/AttackZoneArea_a";
-                GameObject parent = GameObject.Find(path);
-                SpawnRegion baseSpawnRegion = GameObject.Find(path + "/CougarTerritoryZone_a_T1").transform.GetChild(0).GetComponent<SpawnRegion>();
-                baseSpawnRegionObj.name = "ModCougarTerritoryZone1";
-                Vector3 pos = new Vector3(164.56f, 1.91f, 11.00f);
-                GameObject newSpawnRegionObj = UnityEngine.Object.Instantiate(baseSpawnRegionObj, parent.transform);
-                Logger.Log("Added spawnregion object to scene", FlaggedLoggingLevel.Debug);
-                SpawnRegion sr = newSpawnRegionObj.AddComponent<SpawnRegion>();
-                Logger.Log($"Added spawnregion component to object: {sr != null}", FlaggedLoggingLevel.Debug);
-                sr = baseSpawnRegion;
-                newSpawnRegionObj.transform.position = pos;
+                //grab initial territory object and move it around
+                GameObject territoryObject = GameObject.Find("Design/Cougar/AttackZoneArea_a/CougarTerritoryZone_a_T1");
+                territoryObject.transform.position = new Vector3(107.14f, 2.36f, 23.92f);
+
+                GameObject spawnRegionObject = territoryObject.transform.GetChild(0).gameObject;
+                spawnRegionObject.gameObject.SetActive(true); //set spawn region object to true
+                territoryObject.transform.GetChild(1).gameObject.SetActive(true); //set audio object to true
+                territoryObject.transform.GetChild(2).gameObject.SetActive(true); //set wander region object to true, idk if this is used
+
+                SpawnRegion sr = spawnRegionObject.GetComponent<SpawnRegion>();
+                Il2Cpp.SpawnRegionManager spawnRegionManager = GameManager.GetSpawnRegionManager();
+
+                if (sr != null)
+                {
+                    if (!sr.m_Registered)
+                    {
+                        if (spawnRegionManager != null)
+                        {
+                            spawnRegionManager.Add(sr);
+                            sr.m_Registered = true;
+                        }
+                    }
+                }
+
+                if (spawnRegionManager != null)
+                {
+
+                    spawnRegionManager.MaybeEnableSpawnRegionsInRange(sr, 100, true);
+
+                }
 
             }
 
-
+            
         }
+
 
 
     }

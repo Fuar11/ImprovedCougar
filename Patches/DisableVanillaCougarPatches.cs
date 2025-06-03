@@ -16,9 +16,7 @@ namespace ImprovedCougar.Patches
 
         public class DisableUpdateLoop
         {
-            //nothing for now
-            //public static bool Prefix() => false;
-
+            public static bool Prefix() => false;
         }
     }
 }
