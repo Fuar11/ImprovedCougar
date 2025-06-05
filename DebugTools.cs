@@ -31,7 +31,7 @@ namespace ImprovedCougar
             // Create a vertical line (cylinder) going up into the sky
             GameObject line = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             line.transform.position = position + Vector3.up * 2.5f; // center the cylinder
-            line.transform.localScale = new Vector3(0.05f, 2.5f, 0.05f); // thin tall cylinder
+            line.transform.localScale = new Vector3(0.1f, 500f, 0.1f); // thin tall cylinder
             line.transform.rotation = Quaternion.identity;
 
             var lineRenderer = line.GetComponent<Renderer>();

@@ -47,7 +47,7 @@ namespace ImprovedCougar
 
                 //grab initial territory object and move it around
                 GameObject territoryObject = GameObject.Find("Design/Cougar/AttackZoneArea_a/CougarTerritoryZone_a_T1");
-                territoryObject.transform.position = new Vector3(107.14f, 2.36f, 23.92f);
+                territoryObject.transform.position = new Vector3(102.14f, 2.65f, 79.10f); //temporary testing spawn at trapper's
 
                 GameObject spawnRegionObject = territoryObject.transform.GetChild(0).gameObject;
                 spawnRegionObject.gameObject.SetActive(true); //set spawn region object to true

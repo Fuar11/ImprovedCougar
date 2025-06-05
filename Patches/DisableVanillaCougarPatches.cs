@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Il2Cpp;
 using HarmonyLib;
 using Il2CppTLD.AI;
+using UnityEngine.AI;
 
 namespace ImprovedCougar.Patches
 {

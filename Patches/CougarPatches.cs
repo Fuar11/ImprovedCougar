@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ImprovedCougar.Settings;
+using UnityEngine.AI;
 
 namespace ImprovedCougar.Patches
 {
@@ -37,5 +38,33 @@ namespace ImprovedCougar.Patches
             }
 
         }
+
+        [HarmonyPatch(typeof(SpawnRegion), nameof(SpawnRegion.InstantiateSpawnInternal), new Type[] { typeof(GameObject), typeof(WildlifeMode), typeof(Vector3), typeof(Quaternion) })]
+
+        public class AdjustSpawnPoints
+        {
+
+            public static void Prefix(SpawnRegion __instance, ref Vector3 pos)
+            {
+                if (__instance.m_SpawnablePrefab == null) return;
+                if (!__instance.m_SpawnablePrefab.name.ToLowerInvariant().Contains("cougar")) return;
+
+                Main.Logger.Log($"Checking point chosen {pos}", ComplexLogger.FlaggedLoggingLevel.Debug);
+
+                UnityEngine.AI.NavMeshHit hit;
+                if (UnityEngine.AI.NavMesh.SamplePosition(pos, out hit, 50.0f, NavMesh.AllAreas))
+                {
+                    pos = hit.position;
+                    Main.Logger.Log($"New point chosen {pos}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                }
+                else
+                {
+                    Main.Logger.Log("Couldn't find any valid points on navmesh near chosen point.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                }
+
+            }
+
+        }
+
     }
 }
