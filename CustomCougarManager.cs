@@ -86,6 +86,7 @@ namespace ImprovedCougar
 
                 if (sr != null)
                 {
+                    sr.m_Center = sr.transform.position;
                     if (!sr.m_Registered)
                     {
                         if (spawnRegionManager != null)

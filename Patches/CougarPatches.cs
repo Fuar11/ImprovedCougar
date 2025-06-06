@@ -47,7 +47,7 @@ namespace ImprovedCougar.Patches
             public static void Prefix(SpawnRegion __instance, ref Vector3 pos)
             {
                 if (__instance.m_SpawnablePrefab == null) return;
-                if (!__instance.m_SpawnablePrefab.name.ToLowerInvariant().Contains("cougar")) return;
+                if (__instance.m_SpawnablePrefab.GetComponent<BaseAi>().m_AiSubType != AiSubType.Cougar) return;
 
                 Main.Logger.Log($"Checking point chosen {pos}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
@@ -65,6 +65,120 @@ namespace ImprovedCougar.Patches
             }
 
         }
+
+        /***
+
+        [HarmonyPatch(typeof(SpawnRegion), nameof(SpawnRegion.InstantiateSpawn))]
+
+        public class Test5
+        {
+
+            public static void Prefix(SpawnRegion __instance)
+            {
+                if (__instance.m_SpawnablePrefab == null) return;
+                if (__instance.m_SpawnablePrefab.GetComponent<BaseAi>().m_AiSubType != AiSubType.Cougar) return;
+
+                Main.Logger.Log("InstantiateSpawn called for cougar", ComplexLogger.FlaggedLoggingLevel.Debug);
+            }
+
+
+        }
+
+        [HarmonyPatch(typeof(SpawnRegion), nameof(SpawnRegion.InstantiateAndPlaceSpawn))]
+
+        public class Test4
+        {
+
+            public static void Prefix(SpawnRegion __instance)
+            {
+                if (__instance.m_SpawnablePrefab == null) return;
+                if (__instance.m_SpawnablePrefab.GetComponent<BaseAi>().m_AiSubType != AiSubType.Cougar) return;
+
+                Main.Logger.Log("InstantiateAndPlaceSpawn called for cougar", ComplexLogger.FlaggedLoggingLevel.Debug);
+            }
+
+
+        }
+
+        [HarmonyPatch(typeof(SpawnRegion), nameof(SpawnRegion.Spawn))]
+
+        public class Test3
+        {
+
+            public static void Prefix(SpawnRegion __instance)
+            {
+                if (__instance.m_SpawnablePrefab == null) return;
+                if (__instance.m_SpawnablePrefab.GetComponent<BaseAi>().m_AiSubType != AiSubType.Cougar) return;
+
+                Main.Logger.Log("Spawn called for cougar", ComplexLogger.FlaggedLoggingLevel.Debug);
+            }
+
+
+        }
+
+        [HarmonyPatch(typeof(SpawnRegion), nameof(SpawnRegion.AddActiveSpawns))]
+
+        public class Test2
+        {
+
+            public static void Prefix(SpawnRegion __instance)
+            {
+                if (__instance.m_SpawnablePrefab == null) return;
+                if (__instance.m_SpawnablePrefab.GetComponent<BaseAi>().m_AiSubType != AiSubType.Cougar) return;
+
+                Main.Logger.Log("AddActiveSpawns called for cougar", ComplexLogger.FlaggedLoggingLevel.Debug);
+            }
+
+
+        }
+
+        [HarmonyPatch(typeof(SpawnRegion), nameof(SpawnRegion.AdjustActiveSpawnRegionPopulation))]
+
+        public class Test1
+        {
+
+            public static void Prefix(SpawnRegion __instance)
+            {
+                if (__instance.m_SpawnablePrefab == null) return;
+                if (__instance.m_SpawnablePrefab.GetComponent<BaseAi>().m_AiSubType != AiSubType.Cougar) return;
+
+                Main.Logger.Log("AdjustActiveSpawnRegionPopulation called for cougar", ComplexLogger.FlaggedLoggingLevel.Debug);
+            }
+
+
+        }
+
+        [HarmonyPatch(typeof(SpawnRegion), nameof(SpawnRegion.CalculateTargetPopulation))]
+
+        public class TestPop
+        {
+
+            public static void Postfix(SpawnRegion __instance, ref int __result)
+            {
+                if (__instance.m_SpawnablePrefab == null) return;
+                if (__instance.m_SpawnablePrefab.GetComponent<BaseAi>().m_AiSubType != AiSubType.Cougar) return;
+
+                Main.Logger.Log($"CalculateTargetPopulation called for cougar with result {__result}", ComplexLogger.FlaggedLoggingLevel.Debug);
+            }
+
+
+        }
+
+        [HarmonyPatch(typeof(SpawnRegion), nameof(SpawnRegion.SpawnRegionCloseEnoughForSpawning))]
+
+        public class TestSuppr
+        {
+
+            public static void Postfix(SpawnRegion __instance, ref bool __result)
+            {
+                if (__instance.m_SpawnablePrefab == null) return;
+                if (__instance.m_SpawnablePrefab.GetComponent<BaseAi>().m_AiSubType != AiSubType.Cougar) return;
+
+                Main.Logger.Log($"SpawnRegionCloseEnoughForSpawning called for cougar with result {__result}", ComplexLogger.FlaggedLoggingLevel.Debug);
+            }
+
+
+        } ***/
 
     }
 }
