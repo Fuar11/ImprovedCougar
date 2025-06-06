@@ -33,53 +33,13 @@ namespace ImprovedCougar
                 GameObject.DontDestroyOnLoad(ccm);
                 CustomCougarManager ??= ccm.AddComponent<CustomCougarManager>();
 
-                UpdateCougarTerritory(sceneName);
+                CustomCougarManager.MoveSpawnRegion();
 
             }
 
         }
 
-        private void UpdateCougarTerritory(string scene)
-        {
-
-            if(scene == "LakeRegion")
-            {
-
-                //grab initial territory object and move it around
-                GameObject territoryObject = GameObject.Find("Design/Cougar/AttackZoneArea_a/CougarTerritoryZone_a_T1");
-                territoryObject.transform.position = new Vector3(102.14f, 2.65f, 79.10f); //temporary testing spawn at trapper's
-
-                GameObject spawnRegionObject = territoryObject.transform.GetChild(0).gameObject;
-                spawnRegionObject.gameObject.SetActive(true); //set spawn region object to true
-                territoryObject.transform.GetChild(1).gameObject.SetActive(true); //set audio object to true
-                territoryObject.transform.GetChild(2).gameObject.SetActive(true); //set wander region object to true, idk if this is used
-
-                SpawnRegion sr = spawnRegionObject.GetComponent<SpawnRegion>();
-                Il2Cpp.SpawnRegionManager spawnRegionManager = GameManager.GetSpawnRegionManager();
-
-                if (sr != null)
-                {
-                    if (!sr.m_Registered)
-                    {
-                        if (spawnRegionManager != null)
-                        {
-                            spawnRegionManager.Add(sr);
-                            sr.m_Registered = true;
-                        }
-                    }
-                }
-
-                if (spawnRegionManager != null)
-                {
-
-                    spawnRegionManager.MaybeEnableSpawnRegionsInRange(sr, 100, true);
-
-                }
-
-            }
-
-            
-        }
+        
 
 
 

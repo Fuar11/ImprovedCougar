@@ -283,6 +283,7 @@ namespace ImprovedCougar
                 else
                 {
                     Main.Logger.Log("Cougar is freezing for too long and player is not looking. Teleporting cougar to retreat point and hiding...", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    retreatPosition = lastPosition != Vector3.zero ? lastPosition : (Vector3)FindRetreatCoverPoint(cougar, player, 50f, Utils.m_PhysicalCollisionLayerMask);
                     TeleportCougarToPosition(retreatPosition, cougar);
                     SetAiMode((AiMode)CustomCougarAiMode.Hide);
                 }
