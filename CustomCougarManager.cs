@@ -15,10 +15,30 @@ namespace ImprovedCougar
     internal class CustomCougarManager : MonoBehaviour
     {
 
+        //spawn region
         public Vector3? currentSpawnRegion = Vector3.zero;
-        public bool toUpdateSpawnRegion = false;
-        public string lastRegion = ""; //simply used to get the region
+
+        public Vector3? lastSpawnRegionML = null;
+        public Vector3? lastSpawnRegionPV = null;
+        public Vector3? lastSpawnRegionMT = null;
+        public Vector3? lastSpawnRegionTWM = null;
+        public Vector3? lastSpawnRegionBRM = null;
+        public Vector3? lastSpawnRegionBR = null;
+        public Vector3? lastSpawnRegionAC = null;
+        public Vector3? lastSpawnRegionHRV = null;
+        public Vector3? lastSpawnRegionFA = null;
+        public Vector3? lastSpawnRegionSP = null;
+
+        //add modded regions here
+
+        //scene
+
+        private string latestRegion = string.Empty;
+
+        //flags
         public bool cougarArrived = true;
+        public bool toMoveSpawnRegion = false;
+        public bool toSetNewSpawnRegion = false;
 
         //time
         public float timeToMoveSpawnRegion = 0;
@@ -69,7 +89,7 @@ namespace ImprovedCougar
 
             float currentDays = GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() / 24f;
 
-            //this way is slightly more efficient
+            //this is slightly more efficient
             if (!cougarArrived && currentDays >= daysToArrive) cougarArrived = true;
 
             if (cougarArrived)
@@ -82,44 +102,62 @@ namespace ImprovedCougar
                     SetSpawnRegion();
                 }
             }
-
-            
-
-        }
-
-        public void SetSpawnRegion()
-        {
-
-            var random = new System.Random();
-
-            //random for now
-            currentSpawnRegion = SpawnRegionPositions.GetRandomSpawnRegion(GetRegion());
-            if(currentSpawnRegion == null)
-            {
-                Main.Logger.Log("Unable to set spawn region!", FlaggedLoggingLevel.Error);
-                return;
-            }
-            int timeToAdd = random.Next(minTimeTillNextSpawnRegionMoveInHours, maxTimeTillNextSpawnRegionMoveInHours);
-            timeToMoveSpawnRegion = GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() + timeToAdd;
-            debugTimeToMoveSpawnRegionInHours = timeToAdd; //this is just to view the time in hours to wait until the next one in ue
-            toUpdateSpawnRegion = true;
-            Main.Logger.Log($"New spawn region {currentSpawnRegion} set!", FlaggedLoggingLevel.Debug);
         }
 
         public void UpdateSpawnRegion()
         {
 
-            //check if it's time to pick a new territory, eventually there will be more conditions than just this
             if (!GameManager.GetWeatherComponent().IsIndoorScene())
             {
-                if(GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() >= timeToMoveSpawnRegion)
+
+                //check if it's time to pick a new territory, eventually there will be more conditions than just this
+                if (GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() >= timeToMoveSpawnRegion || toSetNewSpawnRegion)
                 {
                     Main.Logger.Log("Player is outside, executing new spawn region logic", FlaggedLoggingLevel.Debug);
                     SetSpawnRegion();
                 }
+                else if (HasChangedRegions())
+                {
+                    Main.Logger.Log("Region has changed. Checking for existing spawn regions in this region.", FlaggedLoggingLevel.Debug);
+                    SetCurrentSpawnRegionToExistingSpawnRegion(SceneUtilities.GetActiveSceneName());
+                    if(currentSpawnRegion == null)
+                    {
+                        Main.Logger.Log("Region has changed but player has not yet been to this region. Setting a new spawn region.", FlaggedLoggingLevel.Debug);
+                        SetSpawnRegion();
+                    }
 
-                if(toUpdateSpawnRegion) UpdateCougarTerritory(GetRegion());
+                    latestRegion = SceneUtilities.GetActiveSceneName();
+                }
+
+                if (toMoveSpawnRegion) UpdateCougarTerritory(latestRegion);
             }
+        }
+        public void SetSpawnRegion()
+        {
+
+            var random = new System.Random();
+            var region = SceneUtilities.GetActiveSceneName();
+
+            if (!RegionHasCougar(region)) return;
+
+            latestRegion = SceneUtilities.GetActiveSceneName();
+
+            //random for now
+            currentSpawnRegion = SpawnRegionPositions.GetRandomSpawnRegion(region);
+            if(currentSpawnRegion == null)
+            {
+                Main.Logger.Log("Unable to set spawn region!", FlaggedLoggingLevel.Error);
+                return;
+            }
+
+            SetPerRegionSpawnRegion((Vector3)currentSpawnRegion, region);
+
+            int timeToAdd = random.Next(minTimeTillNextSpawnRegionMoveInHours, maxTimeTillNextSpawnRegionMoveInHours);
+            timeToMoveSpawnRegion = GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() + timeToAdd;
+            debugTimeToMoveSpawnRegionInHours = timeToAdd; //this is just to view the time in hours to wait until the next one in ue
+            toMoveSpawnRegion = true;
+            toSetNewSpawnRegion = false;
+            Main.Logger.Log($"New spawn region {currentSpawnRegion} set!", FlaggedLoggingLevel.Debug);
         }
 
         public void UpdateCougarTerritory(string scene)
@@ -180,55 +218,100 @@ namespace ImprovedCougar
 
             }
 
-            toUpdateSpawnRegion = false;
+            toMoveSpawnRegion = false;
         }
 
+        private void SetCurrentSpawnRegionToExistingSpawnRegion(string region)
+        {
+
+            if (!RegionHasCougar(region)) return;
+
+            switch (region)
+            {
+                case "LakeRegion":
+                    currentSpawnRegion = lastSpawnRegionML;
+                    break;
+                case "RuralRegion":
+                    currentSpawnRegion = lastSpawnRegionPV;
+                    break;
+                case "MountainTownRegion":
+                    currentSpawnRegion = lastSpawnRegionMT;
+                    break;
+                case "CrashMountainRegion":
+                    currentSpawnRegion = lastSpawnRegionTWM;
+                    break;
+                case "TracksRegion":
+                    currentSpawnRegion = lastSpawnRegionBR;
+                    break;
+                case "AshCanyonRegion":
+                    currentSpawnRegion = lastSpawnRegionAC;
+                    break;
+                case "BlackrockRegion":
+                    currentSpawnRegion = lastSpawnRegionAC;
+                    break;
+                case "RiverValleyRegion": 
+                    currentSpawnRegion = lastSpawnRegionHRV;
+                    break;
+                case "AirfieldRegion":
+                    currentSpawnRegion = lastSpawnRegionFA;
+                    break;
+                case "MountainPassRegion":
+                    currentSpawnRegion = lastSpawnRegionSP;
+                    break;
+                default: break;
+            }
+
+        }
+
+        private void SetPerRegionSpawnRegion(Vector3 spawnRegion, string region)
+        {
+
+            switch (region)
+            {
+                case "LakeRegion":
+                    lastSpawnRegionML = currentSpawnRegion;
+                    break;
+                case "RuralRegion":
+                     lastSpawnRegionPV = currentSpawnRegion;
+                    break;
+                case "MountainTownRegion":
+                     lastSpawnRegionMT = currentSpawnRegion;
+                    break;
+                case "CrashMountainRegion":
+                    lastSpawnRegionTWM = currentSpawnRegion;
+                    break;
+                case "TracksRegion":
+                    currentSpawnRegion = lastSpawnRegionBR;
+                    break;
+                case "AshCanyonRegion":
+                    lastSpawnRegionAC = currentSpawnRegion;
+                    break;
+                case "BlackrockRegion":
+                    lastSpawnRegionAC = currentSpawnRegion;
+                    break;
+                case "RiverValleyRegion":
+                    lastSpawnRegionHRV = currentSpawnRegion;
+                    break;
+                case "AirfieldRegion":
+                    lastSpawnRegionFA = currentSpawnRegion;
+                    break;
+                case "MountainPassRegion":
+                    lastSpawnRegionSP = currentSpawnRegion;
+                    break;
+                default: break;
+            }
+
+        }
 
         public bool RegionHasCougar(string scene) //gotta add TLDev regions to this list at some point
         {
             return scene == "LakeRegion" || scene == "RuralRegion" || scene == "TracksRegion" || scene == "MountainCrashRegion" || scene == "MountainTownRegion" || scene == "AshCanyonRegion" || scene == "BlackrockRegion" || scene == "RiverValleyRegion" || scene == "AirfieldRegion" || scene == "MiningRegion" || scene == "MountainPassRegion" ? true : false;
         }
 
-        //region stuff
-
-        public string GetRegion()
+        private bool HasChangedRegions()
         {
-
-            string scene = SceneUtilities.GetActiveSceneName();
-            List<string> regions = GetAllRegions();
-
-            if (regions.Any(r => scene.Contains(r.ToString())))
-            {
-                lastRegion = scene; 
-            }
-            else
-            {
-                if (!regions.Any(r => scene.Contains(r.ToString()))) scene = lastRegion;
-            }
-
-            return scene;
+            return latestRegion != SceneUtilities.GetActiveSceneName() ? true : false;
         }
-
-        private List<string> GetAllRegions()
-        {
-            List<string> names = Enum.GetNames(typeof(GameRegion)).ToList();
-
-            names.Add("LongRailTransitionZone");
-            names.Add("RavineTransitionZone");
-            names.Add("DamRiverTransitionZoneB");
-            names.Add("HubRegion");
-            names.Add("MountainPassRegion");
-
-            //TLDev
-            names.Add("ModPrecariousCauseway");
-            names.Add("ModShatteredMarsh");
-            names.Add("ModForsakenShore");
-            names.Add("ModRockyThoroughfare");
-            names.Add("ModMountainPass");
-
-            return names;
-        }
-
 
     }
 }

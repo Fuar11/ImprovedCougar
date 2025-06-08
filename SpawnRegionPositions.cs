@@ -19,12 +19,17 @@ namespace ImprovedCougar
         public static Vector3 ML_LookoutMountain = new Vector3(692f, 122f, 903.04f); //the mountain the forestry lookout sits upon
         public static Vector3 ML_LakeHill = new Vector3(1573.59f, 60.55f, 597.42f); //hill behind Mystery Lake towards the Dam
         public static Vector3 ML_LakeOverlook = new Vector3(942.59f, 72.62f, -81.59f); //hill behind Mystery Lake where the prepper cache is
+
+        public static Vector3 PV_TestSpawnRegion = new Vector3(2509.84f, 168.93f, 672.24f); //around hunting blind near signal hill
+
         private static List<Vector3> GetSpawnRegionsByRegion(string region)
         {
             switch (region)
             {
                 case "LakeRegion":
                     return new List<Vector3>() { ML_WoodsCabin, ML_Backwoods, ML_DeadfallArea, ML_TrainTunnelArea, ML_LoggingRoad, ML_LookoutMountain, ML_LakeHill, ML_LakeOverlook };
+                case "RuralRegion":
+                    return new List<Vector3>() { PV_TestSpawnRegion };
                 default: return null;
             }
         }

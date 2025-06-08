@@ -26,6 +26,12 @@ namespace ImprovedCougar
 
         public override void OnSceneWasInitialized(int buildIndex, string sceneName)
         {
+            if (SceneUtilities.IsSceneMenu(sceneName))
+            {
+                GameObject.Destroy(GameObject.Find("CustomCougarManager"));
+                CustomCougarManager = null;
+                return;
+            }
             if (SceneUtilities.IsScenePlayable(sceneName))
             {
 
@@ -41,11 +47,12 @@ namespace ImprovedCougar
                     }
                     else
                     {
-                        Logger.Log("Setting toUpdateSpawnRegion to true", FlaggedLoggingLevel.Debug);
-                        CustomCougarManager.toUpdateSpawnRegion = true;
+                        Logger.Log("Setting toMoveSpawnRegion to true", FlaggedLoggingLevel.Debug);
+                        CustomCougarManager.toMoveSpawnRegion = true;
                     }
                 }
             }
+           
 
         }
 
