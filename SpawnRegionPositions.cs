@@ -29,10 +29,13 @@ namespace ImprovedCougar
             }
         }
 
-        public static Vector3 GetRandomSpawnRegion(string region)
+        public static Vector3? GetRandomSpawnRegion(string region)
         {
             var random = new Random();
             List<Vector3> list = GetSpawnRegionsByRegion(region);
+
+            if (list == null || list.Count == 0) return null;
+
             return list[random.Next(list.Count)];
         }
 

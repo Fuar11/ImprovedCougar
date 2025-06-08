@@ -28,13 +28,23 @@ namespace ImprovedCougar
         {
             if (SceneUtilities.IsScenePlayable(sceneName))
             {
-                GameObject ccm = new() { name = "CustomCougarManager", layer = vp_Layer.Default };
-                UnityEngine.Object.Instantiate(ccm, GameManager.GetVpFPSPlayer().transform);
-                GameObject.DontDestroyOnLoad(ccm);
-                CustomCougarManager ??= ccm.AddComponent<CustomCougarManager>();
 
-                CustomCougarManager.MoveSpawnRegion();
+                if (!sceneName.Contains("_SANDBOX") && !sceneName.Contains("_DLC") && !sceneName.Contains("_WILDLIFE") && !sceneName.Contains("_VFX"))
+                {
 
+                    if (CustomCougarManager == null)
+                    {
+                        GameObject ccm = new() { name = "CustomCougarManager", layer = vp_Layer.Default };
+                        UnityEngine.Object.Instantiate(ccm, GameManager.GetVpFPSPlayer().transform);
+                        GameObject.DontDestroyOnLoad(ccm);
+                        CustomCougarManager ??= ccm.AddComponent<CustomCougarManager>();
+                    }
+                    else
+                    {
+                        Logger.Log("Setting toUpdateSpawnRegion to true", FlaggedLoggingLevel.Debug);
+                        CustomCougarManager.toUpdateSpawnRegion = true;
+                    }
+                }
             }
 
         }

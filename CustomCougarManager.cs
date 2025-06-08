@@ -1,10 +1,13 @@
 ﻿using ComplexLogger;
+using ExpandedAiFramework;
 using Il2Cpp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace ImprovedCougar
 {
@@ -12,59 +15,120 @@ namespace ImprovedCougar
     internal class CustomCougarManager : MonoBehaviour
     {
 
-        public Vector3 currentSpawnRegion = Vector3.zero;
-        public string currentRegion = ""; //simply used to get the region
+        public Vector3? currentSpawnRegion = Vector3.zero;
+        public bool toUpdateSpawnRegion = false;
+        public string lastRegion = ""; //simply used to get the region
+        public bool cougarArrived = true;
 
         //time
-        public float timeSinceLastSpawnRegionMove = 0;
-        public float maxTimeTillNextSpawnRegionMoveInHours = 24; //placeholder
-        public float minTimeTillNextSpawnRegionMoveInHours = 12; //placeholder
-        
+        public float timeToMoveSpawnRegion = 0;
+        protected float debugTimeToMoveSpawnRegionInHours = 0;
+        public int maxTimeTillNextSpawnRegionMoveInHours = 2; //Settings.CustomSettings.settings.maxTimeToMove; 
+        public int minTimeTillNextSpawnRegionMoveInHours = 1; //Settings.CustomSettings.settings.minTimeToMove; 
 
+        public int daysToArrive = 0;
+        public int maxTimeTillCougarArrivalInDays = 2; //Settings.CustomSettings.settings.maxTimeToArrive; 
+        public int minTimeTillCougarArrivalInDays = 1; //Settings.CustomSettings.settings.minTimeToArrive; 
+
+
+        public void Start()
+        {
+
+            //i think this checks if the feature is enabled
+            if (!GameManager.GetCougarManager().IsEnabled) return;
+
+            //call load data stuff here
+
+            //if load data null
+           
+            if(!cougarArrived && daysToArrive == 0)
+            {
+                var random = new System.Random();
+
+                daysToArrive += random.Next(maxTimeTillCougarArrivalInDays, maxTimeTillCougarArrivalInDays);
+
+                //debug
+                cougarArrived = true;
+                //remove this after
+            }
+
+
+        }
 
         public void Update()
         {
 
             if(GameManager.m_IsPaused || GameManager.s_IsGameplaySuspended) return;
             if (SaveGameSystem.IsRestoreInProgress()) return;
+            if (!GameManager.GetCougarManager().IsEnabled) return;
 
             PlayerStruggle struggle = GameManager.m_PlayerStruggle;
             if (struggle != null && struggle.InStruggle()) return;
 
-            //eventually handle spawning and spawn point moving, wander paths, all that stuff
+            //handle spawning and spawn point moving, wander paths, all that stuff
 
-            if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.Z))
+            float currentDays = GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() / 24f;
+
+            //this way is slightly more efficient
+            if (!cougarArrived && currentDays >= daysToArrive) cougarArrived = true;
+
+            if (cougarArrived)
             {
-                Main.Logger.Log("Moving spawn region using key press.", ComplexLogger.FlaggedLoggingLevel.Debug);
-                MoveSpawnRegion();
+                UpdateSpawnRegion();
+
+                if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.Z))
+                {
+                    Main.Logger.Log("Moving spawn region using key press.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    SetSpawnRegion();
+                }
             }
+
+            
 
         }
 
         public void SetSpawnRegion()
         {
+
+            var random = new System.Random();
+
             //random for now
             currentSpawnRegion = SpawnRegionPositions.GetRandomSpawnRegion(GetRegion());
-            Main.Logger.Log($"New spawn region {currentSpawnRegion}", FlaggedLoggingLevel.Debug);
+            if(currentSpawnRegion == null)
+            {
+                Main.Logger.Log("Unable to set spawn region!", FlaggedLoggingLevel.Error);
+                return;
+            }
+            int timeToAdd = random.Next(minTimeTillNextSpawnRegionMoveInHours, maxTimeTillNextSpawnRegionMoveInHours);
+            timeToMoveSpawnRegion = GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() + timeToAdd;
+            debugTimeToMoveSpawnRegionInHours = timeToAdd; //this is just to view the time in hours to wait until the next one in ue
+            toUpdateSpawnRegion = true;
+            Main.Logger.Log($"New spawn region {currentSpawnRegion} set!", FlaggedLoggingLevel.Debug);
         }
 
-        public void MoveSpawnRegion()
+        public void UpdateSpawnRegion()
         {
-            SetSpawnRegion();
 
+            //check if it's time to pick a new territory, eventually there will be more conditions than just this
             if (!GameManager.GetWeatherComponent().IsIndoorScene())
             {
-                UpdateCougarTerritory(GetRegion());
+                if(GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() >= timeToMoveSpawnRegion)
+                {
+                    Main.Logger.Log("Player is outside, executing new spawn region logic", FlaggedLoggingLevel.Debug);
+                    SetSpawnRegion();
+                }
+
+                if(toUpdateSpawnRegion) UpdateCougarTerritory(GetRegion());
             }
         }
 
-        private void UpdateCougarTerritory(string scene)
+        public void UpdateCougarTerritory(string scene)
         {
 
             if (RegionHasCougar(scene))
             {
 
-                //grab initial territory object and move it around
+                //grab initial territory object and move it around, gotta modify this for specific regions
                 GameObject territoryObject = GameObject.Find("CougarTerritoryZone_a_T1");
 
                 if (territoryObject == null)
@@ -73,8 +137,18 @@ namespace ImprovedCougar
                     return;
                 }
 
-                territoryObject.transform.position = currentSpawnRegion;
+                if(currentSpawnRegion == null)
+                {
+                    Main.Logger.Log("Unable to move spawn region!", FlaggedLoggingLevel.Error);
+                    return;
+                }
+
+                Main.Logger.Log($"Old spawn region position {territoryObject.transform.position.ToString()}", FlaggedLoggingLevel.Debug);
+
+                territoryObject.transform.position = (Vector3)currentSpawnRegion;
                 //territoryObject.transform.position = new Vector3(102.14f, 2.65f, 79.10f); //temporary testing spawn at trapper's
+
+                Main.Logger.Log($"New spawn region position {territoryObject.transform.position.ToString()}", FlaggedLoggingLevel.Debug);
 
                 GameObject spawnRegionObject = territoryObject.transform.GetChild(0).gameObject;
                 spawnRegionObject.gameObject.SetActive(true); //set spawn region object to true
@@ -106,7 +180,7 @@ namespace ImprovedCougar
 
             }
 
-
+            toUpdateSpawnRegion = false;
         }
 
 
@@ -120,16 +194,16 @@ namespace ImprovedCougar
         public string GetRegion()
         {
 
-            string scene = GameManager.m_ActiveScene;
+            string scene = SceneUtilities.GetActiveSceneName();
             List<string> regions = GetAllRegions();
 
             if (regions.Any(r => scene.Contains(r.ToString())))
             {
-                currentRegion = scene;
+                lastRegion = scene; 
             }
             else
             {
-                if (!regions.Any(r => scene.Contains(r.ToString()))) scene = currentRegion;
+                if (!regions.Any(r => scene.Contains(r.ToString()))) scene = lastRegion;
             }
 
             return scene;
