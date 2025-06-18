@@ -10,6 +10,8 @@ using UnityEngine;
 using UnityEngine.AI;
 using ImprovedCougar.Pathfinding;
 using Color = UnityEngine.Color;
+using static Il2Cpp.CarcassSite;
+using static UnityEngine.GraphicsBuffer;
 
 namespace ImprovedCougar
 {
@@ -28,8 +30,9 @@ namespace ImprovedCougar
 
         public CustomCougar(IntPtr ptr) : base(ptr) { }
 
-        //this will be eventually be used for the cougar to wander outside of it's territory
-        protected WanderPath m_wanderPath;
+        //this will be used for the cougar to wander outside of it's territory
+        protected WanderPath wanderPath;
+        protected bool WanderPathConnected = false;
         protected override float m_MinWaypointDistance { get { return 100.0f; } }
         protected override float m_MaxWaypointDistance { get { return 1000.0f; } }
 
@@ -41,13 +44,14 @@ namespace ImprovedCougar
 
         private float baseStalkSpeed = 0f;
         private float closeStalkSpeed = 0f;
+        private float wanderSpeed = 0f;
         private float attackSpeed = 0f;
 
         private float spottedRetreatSpeed = 0f;
 
         //distances
         private const float attackDistance = 25f; //for now
-        private const float maxStalkDistance = 120f; //for now
+        private const float maxStalkDistance = 200f; //for now
         private const float closeDistance = 35f;
 
         //states
@@ -82,12 +86,17 @@ namespace ImprovedCougar
             base.Initialize(ai, timeOfDay, spawnRegion, proxy);
             mBaseAi.m_DefaultMode = AiMode.Wander;
             mBaseAi.m_StartMode = AiMode.Wander;
+            //mBaseAi.m_DetectionRange *= 2 //this is temporary
+            wanderSpeed = mBaseAi.m_WalkSpeed + 1f;
             baseStalkSpeed = mBaseAi.m_StalkSpeed + 2;
             closeStalkSpeed = mBaseAi.m_StalkSpeed;
             spottedRetreatSpeed = mBaseAi.m_StalkSpeed - 1;
-            attackSpeed = Settings.CustomSettings.settings.cougarSpeed; //i think this will work idk
+            attackSpeed = Settings.CustomSettings.settings.cougarSpeed;
             //this is temporary
             spawnPosition = mBaseAi.transform.position;
+
+            mBaseAi.m_WaypointCompletionBehaviour = BaseAi.WaypointCompletionBehaviouir.Restart;
+            mBaseAi.m_TargetWaypointIndex = 0;
 
             Main.Logger.Log("Cougar initialized", ComplexLogger.FlaggedLoggingLevel.Debug);
         }
@@ -96,6 +105,8 @@ namespace ImprovedCougar
         {
 
             //Main.Logger.Log("Processing custom cougar logic", ComplexLogger.FlaggedLoggingLevel.Debug);
+
+            DoOnUpdate();
 
             switch (CurrentMode)
             {
@@ -116,6 +127,19 @@ namespace ImprovedCougar
             }
         }
 
+        protected override bool PreProcessCustom()
+        {
+            switch (CurrentMode)
+            {
+                case AiMode.FollowWaypoints:
+                    PreProcessingFollowPath();
+                    return false;
+                default:
+                    return base.PreProcessCustom();
+            }
+
+        }
+
         protected void ProcessStalkingAdvanced()
         {
 
@@ -127,6 +151,11 @@ namespace ImprovedCougar
 
             if (currentDistance >= attackDistance)
             {
+
+                if(currentDistance >= maxStalkDistance)
+                {
+                    //go back to what it was doing before stalking
+                }
 
                 timeSinceLastPath += Time.deltaTime;
                 if (timeSinceLastPath > recalcInterval || pathBroken)
@@ -141,7 +170,7 @@ namespace ImprovedCougar
                 {
                     if (currentDistance >= 70f)
                     {
-                        timeToFreezeFor = 20f;
+                        timeToFreezeFor = 15f;
                     }
                     else if (currentDistance <= 70f && currentDistance >= 30)
                     {
@@ -219,11 +248,10 @@ namespace ImprovedCougar
                     {
                         mBaseAi.StartPath(playerPosition, currentSpeed);
                     }
-                    /***
                     else
                     {
                         mBaseAi.SetAiMode((AiMode)CustomCougarAiMode.Retreat);
-                    } ***/
+                    } 
 
 
                 }
@@ -384,7 +412,43 @@ namespace ImprovedCougar
             Main.Logger.Log("Cougar is retreating!", ComplexLogger.FlaggedLoggingLevel.Debug);
         }
 
-        //checks to see if the player is facing the cougar regardless of line of sight
+        protected void SetupFollowPath()
+        {
+            Transform player = GameManager.GetPlayerTransform();
+            Transform cougar = mBaseAi.transform;
+
+            if (!WanderPathConnected)
+            {
+                if (!TryGetSavedWanderPath(mModDataProxy))
+                {
+                    mManager.DataManager.GetNearestWanderPathAsync(mBaseAi.transform.position, WanderPathTypes.IndividualPath, AttachWanderPath, 3);
+                }
+            }
+
+            Vector3 closestPoint = GetNearestPointOnPath(wanderPath, cougar.position);
+            mBaseAi.m_MoveAgent.transform.position = closestPoint;
+            mBaseAi.m_MoveAgent.Warp(closestPoint, 2.0f, true, -1);
+            currentSpeed = wanderSpeed; //for consistency, i know this is useless
+            mBaseAi.m_AiGoalSpeed = wanderSpeed;
+            mBaseAi.SetAiMode(AiMode.FollowWaypoints);
+            Main.Logger.Log($"Following path {wanderPath.Guid.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+        }
+
+
+        protected void PreProcessingFollowPath()
+        {
+
+
+            //this is where you can change out of state, since the main AiMode isn't being overridden
+
+        }
+
+        private void MaybeWanderOutOfTerritory()
+        {
+
+        }
+
+        //line of sight
         private bool IsPlayerFacingCougar(Transform player, Transform cougar)
         {
             Vector3 cougarPosition = (cougar.position - player.position).normalized;
@@ -407,6 +471,8 @@ namespace ImprovedCougar
             return false;
         }
 
+
+        //pathfinding
         public List<Vector3> FindAllNearbyCover(Transform cougar, Transform player, float maxDistance, LayerMask coverObstructionMask)
         {
             Main.Logger.Log("Grabbing new cover positions relative to cougar", ComplexLogger.FlaggedLoggingLevel.Debug);
@@ -541,19 +607,6 @@ namespace ImprovedCougar
             return null;
         }
 
-        float GetCougarHeight(Transform cougar)
-        {
-            Renderer[] renderers = cougar.GetComponentsInChildren<Renderer>();
-            if (renderers.Length == 0)
-                return 0f;
-
-            Bounds combinedBounds = renderers[0].bounds;
-            foreach (Renderer r in renderers)
-                combinedBounds.Encapsulate(r.bounds);
-
-            return combinedBounds.size.y;
-        }
-
         private void StartStalkingPathfinding()
         {
             Transform player = GameManager.GetPlayerTransform();
@@ -581,6 +634,19 @@ namespace ImprovedCougar
             timeSinceLastPath = 0f;
         }
 
+        //misc
+        float GetCougarHeight(Transform cougar)
+        {
+            Renderer[] renderers = cougar.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0)
+                return 0f;
+
+            Bounds combinedBounds = renderers[0].bounds;
+            foreach (Renderer r in renderers)
+                combinedBounds.Encapsulate(r.bounds);
+
+            return combinedBounds.size.y;
+        }
         private void TeleportCougarToPosition(Vector3 pos, Transform cougar)
         {
 
@@ -629,6 +695,76 @@ namespace ImprovedCougar
             
         }
 
+
+        //wander path stuff
+
+        private bool TryGetSavedWanderPath(SpawnModDataProxy proxy)
+        {
+            if (proxy == null)
+            {
+                this.LogTraceInstanced("Null Proxy, getting new wander path");
+                return false;
+            }
+            if (proxy.CustomData == null)
+            {
+                this.LogTraceInstanced($"Null custom data on proxy with guid <<<{proxy.Guid}>>>, getting new wander path");
+                return false;
+            }
+            if (proxy.CustomData.Length == 0)
+            {
+                this.LogTraceInstanced($"Zero-length custom data on proxy with guid <<<{proxy.Guid}>>>, getting new wander path");
+                return false;
+            }
+            Guid spotGuid = new Guid(proxy.CustomData[0]);
+            if (spotGuid == Guid.Empty)
+            {
+                this.LogTraceInstanced($"Empty GUID on proxy with guid <<<{proxy.Guid}>>>, getting new wander path");
+                return false;
+            }
+            if (!mManager.DataManager.AvailableWanderPaths.TryGetValue(spotGuid, out WanderPath wanderPath))
+            {
+                this.LogTraceInstanced($"Could not fetch WanderPath with guid {spotGuid} from proxy with guid <<{proxy.Guid}>>>, getting new wander path");
+                return false;
+            }
+            AttachWanderPath(wanderPath);
+            return true;
+        }
+
+        public void AttachWanderPath(WanderPath path)
+        {
+            wanderPath = path;
+            if (mModDataProxy != null)
+            {
+                mModDataProxy.CustomData = [path.Guid.ToString()];
+            }
+            mBaseAi.m_Waypoints = new Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStructArray<Vector3>(wanderPath.PathPoints.Length);
+            for (int i = 0, iMax = mBaseAi.m_Waypoints.Length; i < iMax; i++)
+            {
+                mBaseAi.m_Waypoints[i] = wanderPath.PathPoints[i];
+            }
+            WanderPathConnected = true;
+            path.Claim();
+        }
+
+        public Vector3 GetNearestPointOnPath(WanderPath path, Vector3 cougarPosition)
+        {
+
+            Vector3 closestPoint = path.PathPoints[0];
+            float closestSqrDist = (closestPoint - cougarPosition).sqrMagnitude;
+
+            for (int i = 1; i < path.PathPoints.Count(); i++)
+            {
+                float sqrDist = (path.PathPoints[i] - cougarPosition).sqrMagnitude;
+                if (sqrDist < closestSqrDist)
+                {
+                    closestSqrDist = sqrDist;
+                    closestPoint = path.PathPoints[i];
+                }
+            }
+
+            return closestPoint;
+        }
+
         //overrides
 
         protected override bool EnterAiModeCustom(AiMode mode)
@@ -636,23 +772,18 @@ namespace ImprovedCougar
             switch (mode)
             {
                 case (AiMode)CustomCougarAiMode.Hide:
-                    LogVerbose($"EnterAiModeCustom: mode is {mode}, routing to BeginHiding");
                     BeginHiding();
                     return false;
                 case AiMode.Stalking:
-                    LogVerbose($"EnterAiModeCustom: mode is {mode}, routing to BeginStalking");
                     BeginStalking();
                     return false;
                 case (AiMode)CustomCougarAiMode.Freeze:
-                    LogVerbose($"EnterAiModeCustom: mode is {mode}, routing to BeginFreezing");
                     BeginFreezing();
                     return false;
                 case (AiMode)CustomCougarAiMode.Retreat:
-                    LogVerbose($"EnterAiModeCustom: mode is {mode}, routing to BeginRetreating");
                     BeginRetreating();
                     return false;
                 default:
-                    LogVerbose($"EnterAiModeCustom: mode is {mode}, deferring.");
                     return true;
             }
         }
@@ -662,11 +793,9 @@ namespace ImprovedCougar
             switch (mode)
             {
                 case (AiMode)CustomCougarAiMode.Hide:
-                    LogVerbose($"ExitAiModeCustom: mode is {mode}, routing to StopHiding");
                     StopHiding();
                     return false;
                 default:
-                    LogVerbose($"ExitAiModeCustom: mode is {mode}, deferring.");
                     return true;
             }
         }
@@ -676,19 +805,15 @@ namespace ImprovedCougar
             switch (mode)
             {
                 case (AiMode)CustomCougarAiMode.Hide:
-                    LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, setting overrideState to Stalking.");
                     overrideState = AiAnimationState.Stalking;
                     return false;
                 case (AiMode)CustomCougarAiMode.Retreat:
-                    LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, setting overrideState to Stalking.");
                     overrideState = AiAnimationState.Stalking;
                     return false;
                 case (AiMode)CustomCougarAiMode.Freeze:
-                    LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, setting overrideState to Stalking.");
                     overrideState = AiAnimationState.Stalking;
                     return false;
                 default:
-                    LogVerbose($"GetAiAnimationStateCustom: mode is {mode}, deffering");
                     overrideState = AiAnimationState.Invalid;
                     return true;
             }
@@ -713,6 +838,17 @@ namespace ImprovedCougar
             }
         }
 
+        //debug
+        private void DoOnUpdate()
+        {
+
+            if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.UpArrow))
+            {
+                Main.Logger.Log("Activating wander path mode!", ComplexLogger.FlaggedLoggingLevel.Debug);
+                SetupFollowPath();
+            }
+
+        }
 
     }
 }

@@ -24,6 +24,17 @@ namespace ImprovedCougar
             return EAFManager.Instance.RegisterSpawnableAi(typeof(CustomCougar), CustomCougar.CustomCougarSettings);
         }
 
+        public override void OnUpdate()
+        {
+
+            if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.DownArrow))
+            {
+                SpawnRegionPositions.AddMarkersToSpawnRegions(SceneUtilities.GetActiveSceneName());
+            }
+
+
+        }
+
         public override void OnSceneWasInitialized(int buildIndex, string sceneName)
         {
             if (SceneUtilities.IsSceneMenu(sceneName))
