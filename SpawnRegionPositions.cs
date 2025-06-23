@@ -35,6 +35,33 @@ namespace ImprovedCougar
         public static Vector3 PV_Backroad = new Vector3(302.9f, 133.3f, 1060.92f); //back road up to Skeeter's Ridge
         public static Vector3 PV_ThreeStrikes = new Vector3(490.07f, 93.23f, 348f); 
         public static Vector3 PV_RiverWoods = new Vector3(1076.07f, 48.20f, 497.29f); //in the woods across the river near the bunker
+
+        public static Vector3 MT_PlanePath = new Vector3(1894.64f, 443.31f, 1511.15f); //path up to the plane crash
+        public static Vector3 MT_CaveField = new Vector3(1375.72f, 385.45f, 2276.16f); //field near HRV cave
+        public static Vector3 MT_LoggingTrailer = new Vector3(881f, 333.57f, 2379.16f); 
+        public static Vector3 MT_Church = new Vector3(496.87f, 307.57f, 2014.70f); 
+        public static Vector3 MT_FarmHill = new Vector3(873.48f, 247.36f, 1299.84f); //hill towards the milton park from the farm
+        public static Vector3 MT_Farm = new Vector3(468.21f, 267.26f, 1851.89f); //default position at farm
+        public static Vector3 MT_WoodLot = new Vector3(1346.21f, 270.72f, 1498.89f); 
+        public static Vector3 MT_Tunnel = new Vector3(1346.21f, 270.72f, 1498.89f);
+
+        public static Vector3 HRV_Stairsteps = new Vector3(331.21f, 119.21f, 732.03f); 
+        public static Vector3 HRV_OffsetFalls = new Vector3(252.76f, 116.4f, 1174.4f); 
+        public static Vector3 HRV_NorthCliffs = new Vector3(473.89f, 105.91f, 1573.81f); 
+        public static Vector3 HRV_HushedRiverForest = new Vector3(638.89f, 100.70f, 952.95f); //forest along the hushed river
+        public static Vector3 HRV_MammothFalls2 = new Vector3(878.63f, 178.02f, 1521.75f); //2nd waterfall off mammoth falls
+        public static Vector3 HRV_MonolithLake = new Vector3(1321f, 211.77f, 1441.26f);
+
+        public static Vector3 BR_Substation = new Vector3(-561f, 140.33f, -211.86f);
+        public static Vector3 BR_BearBend = new Vector3(-852f, 139.07f, -130.33f); //cliffs above bear's bend (near the trailer)
+        public static Vector3 BR_ForagerRemnant = new Vector3(-824f, 141.77f, 548.57f); 
+        public static Vector3 BR_JailersResidence = new Vector3(45f, 189.29f, -657f); //cliffs above Jailer's residence
+        public static Vector3 BR_CuttysCave = new Vector3(360.23f, 191.94f, -660.05f); 
+        public static Vector3 BR_ClearCutPath = new Vector3(338.23f, 242.29f, 116.68f); //hidden path up in the hills near foreman's clearcut
+        public static Vector3 BR_SprucePatch = new Vector3(609.85f, 254.22f, -126.25f); //patch of spruce trees on the road to the mine
+        public static Vector3 BR_Bricklayers = new Vector3(1040.7f, 261.35f, 106.25f);
+        public static Vector3 BR_HuntingBlind = new Vector3(784f, 304.89f, 408f); //near hunting blind along road to the mine
+
         private static List<Vector3> GetSpawnRegionsByRegion(string region)
         {
             switch (region)
@@ -43,6 +70,12 @@ namespace ImprovedCougar
                     return new List<Vector3>() { ML_WoodsCabin, ML_Backwoods, ML_DeadfallAreaForest, ML_LoggingRoad, ML_LookoutMountain, ML_LakeHill, ML_Plateau };
                 case "RuralRegion":
                     return new List<Vector3>() { PV_MountainRoad, PV_SignalHill, PV_PicnicArea, PV_ThompsonForest, PV_ThompsonWaterfall, PV_MiningRoad, PV_DerelictCabins, PV_MisticFalls, PV_SkeetersRidge, PV_Backroad, PV_ThreeStrikes, PV_RiverWoods };
+                case "MountainTownRegion":
+                    return new List<Vector3>() { MT_PlanePath, MT_CaveField, MT_LoggingTrailer, MT_Church, MT_FarmHill, MT_Farm, MT_WoodLot, MT_Tunnel };
+                case "RiverValleyRegion":
+                    return new List<Vector3>() { HRV_Stairsteps, HRV_OffsetFalls, HRV_NorthCliffs, HRV_MonolithLake, HRV_MammothFalls2, HRV_HushedRiverForest };
+                case "BlackrockRegion":
+                    return new List<Vector3>() { BR_BearBend, BR_Bricklayers, BR_ClearCutPath, BR_CuttysCave, BR_ForagerRemnant, BR_HuntingBlind, BR_JailersResidence, BR_SprucePatch, BR_Substation };
                 default: return null;
             }
         }
