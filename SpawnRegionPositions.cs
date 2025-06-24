@@ -62,6 +62,24 @@ namespace ImprovedCougar
         public static Vector3 BR_Bricklayers = new Vector3(1040.7f, 261.35f, 106.25f);
         public static Vector3 BR_HuntingBlind = new Vector3(784f, 304.89f, 408f); //near hunting blind along road to the mine
 
+        public static Vector3 TWM_Entrance = new Vector3(546.63f, 224.21f, 75.63f);
+        public static Vector3 TWM_Wing = new Vector3(1693.35f, 200.24f, 422.42f);
+        public static Vector3 TWM_River = new Vector3(180.1f, 248.22f, 688.53f); //area off the side of the river 
+        public static Vector3 TWM_AndresPeak = new Vector3(337.52f, 334.33f, 1231.58f); //adjacent peak to Andre's Peak. Near Blackrock cave
+        public static Vector3 TWM_EricsFalls = new Vector3(254.82f, 364.14f, 1600f); 
+        public static Vector3 TWM_Backside = new Vector3(993.87f, 262.67f, 1774.52f); //area behind the summit (idk if i'll keep this one, it's fairly open)
+        public static Vector3 TWM_RavineRidge = new Vector3(1514f, 166.9f, 1160.48f); //area near the big indoor cave along the ridge off echo ravine 
+
+        public static Vector3 AC_Bunker = new Vector3(13.34f, 162.24f, -751.76f); 
+        public static Vector3 AC_PillarsFootrest = new Vector3(-319.34f, 161.6f, -504.38f); //hill near pillar's footrest
+        public static Vector3 AC_BirchForest = new Vector3(-784.34f, 236.88f, -101.95f); 
+        public static Vector3 AC_ClimbersPlateau1 = new Vector3(-145.4f, 184.93f, -453.76f); //near climber's cave 
+        public static Vector3 AC_ClimbersPlateau2 = new Vector3(-211.54f, 137.22f, -193.37f); //near the other cave on the plateau
+        public static Vector3 AC_FireOverlook = new Vector3(381.54f, 199.49f, -75.8f); 
+        public static Vector3 AC_WaterfallBasin = new Vector3(-200f, 156.22f, -766.36f);
+        public static Vector3 AC_NarrowFalls = new Vector3(546f, 99.65f, 500f);
+
+
         private static List<Vector3> GetSpawnRegionsByRegion(string region)
         {
             switch (region)
@@ -76,6 +94,10 @@ namespace ImprovedCougar
                     return new List<Vector3>() { HRV_Stairsteps, HRV_OffsetFalls, HRV_NorthCliffs, HRV_MonolithLake, HRV_MammothFalls2, HRV_HushedRiverForest };
                 case "BlackrockRegion":
                     return new List<Vector3>() { BR_BearBend, BR_Bricklayers, BR_ClearCutPath, BR_CuttysCave, BR_ForagerRemnant, BR_HuntingBlind, BR_JailersResidence, BR_SprucePatch, BR_Substation };
+                case "MountainCrashRegion":
+                    return new List<Vector3>() { TWM_AndresPeak, TWM_Backside, TWM_Entrance, TWM_EricsFalls, TWM_RavineRidge, TWM_River, TWM_Wing };
+                case "AshCanyonRegion":
+                    return new List<Vector3>() { AC_BirchForest, AC_Bunker, AC_ClimbersPlateau1, AC_ClimbersPlateau2, AC_FireOverlook, AC_NarrowFalls, AC_PillarsFootrest, AC_WaterfallBasin };
                 default: return null;
             }
         }
