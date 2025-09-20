@@ -58,6 +58,7 @@ namespace ImprovedCougar.Settings
         [Description("Activate visualized raycasts.")]
         public bool debugRays = false;
 
+        public bool ForceSpawningEnabled() => true;
         bool ISpawnTypePickerCandidate.CanSpawn(BaseAi baseAi) => baseAi.m_AiSubType == AiSubType.Cougar;
         int ISpawnTypePickerCandidate.SpawnWeight() => 10000;
     }

@@ -43,8 +43,8 @@ namespace ImprovedCougar
         //time
         public float timeToMoveSpawnRegion = 0;
         protected float debugTimeToMoveSpawnRegionInHours = 0;
-        public int maxTimeTillNextSpawnRegionMoveInHours = 2; //Settings.CustomSettings.settings.maxTimeToMove; 
-        public int minTimeTillNextSpawnRegionMoveInHours = 1; //Settings.CustomSettings.settings.minTimeToMove; 
+        public int maxTimeTillNextSpawnRegionMoveInHours = Settings.CustomSettings.settings.maxTimeToMove; 
+        public int minTimeTillNextSpawnRegionMoveInHours = Settings.CustomSettings.settings.minTimeToMove; 
 
         public int daysToArrive = 0;
         public int maxTimeTillCougarArrivalInDays = 2; //Settings.CustomSettings.settings.maxTimeToArrive; 
@@ -98,8 +98,9 @@ namespace ImprovedCougar
 
                 if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.Z))
                 {
-                    Main.Logger.Log("Moving spawn region using key press.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    Main.Logger.Log("Moving spawn region using key press.", FlaggedLoggingLevel.Debug);
                     SetSpawnRegion();
+                    if (toMoveSpawnRegion) UpdateCougarTerritory(latestRegion);
                 }
             }
         }

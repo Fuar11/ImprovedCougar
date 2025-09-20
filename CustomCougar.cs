@@ -28,11 +28,17 @@ namespace ImprovedCougar
             COUNT
         }
 
+        public enum CougarPath : int
+        {
+            Cougar = 11,
+        }
+
         public CustomCougar(IntPtr ptr) : base(ptr) { }
 
-        //this will be used for the cougar to wander outside of it's territory
+        //this will be used for the cougar to wander outside of it's spawn territory
         protected WanderPath wanderPath;
         protected bool WanderPathConnected = false;
+        protected bool mFetchingWanderPath = false;
         protected override float m_MinWaypointDistance { get { return 100.0f; } }
         protected override float m_MaxWaypointDistance { get { return 1000.0f; } }
 
@@ -325,7 +331,6 @@ namespace ImprovedCougar
             float currentDistance = Vector3.Distance(cougar.position, player.position);
             float pointDistance = Vector3.Distance(cougar.position, spawnPosition);
 
-
             //if still in territory fall back not too far and go into observe state or keep stalking
             //else fall back all the way into territory and go into observe state
 
@@ -421,8 +426,17 @@ namespace ImprovedCougar
             {
                 if (!TryGetSavedWanderPath(mModDataProxy))
                 {
-                    mManager.DataManager.GetNearestWanderPathAsync(mBaseAi.transform.position, WanderPathTypes.IndividualPath, AttachWanderPath, 3);
+                    mManager.DataManager.ScheduleMapDataRequest<WanderPath>(new GetNearestMapDataRequest<WanderPath>(mBaseAi.transform.position, mModDataProxy.Scene, (nearestSpot, result2) =>
+                    {
+                       AttachWanderPath(nearestSpot);
+                    }, false, CheckIfWanderPathIsForCougar, 3));            
                 }
+            }
+
+            if(wanderPath == null)
+            {
+                Main.Logger.Log("Wander path is null.", ComplexLogger.FlaggedLoggingLevel.Error);
+                return;
             }
 
             Vector3 closestPoint = GetNearestPointOnPath(wanderPath, cougar.position);
@@ -434,6 +448,7 @@ namespace ImprovedCougar
             Main.Logger.Log($"Following path {wanderPath.Guid.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
         }
 
+        public bool CheckIfWanderPathIsForCougar(WanderPath path) => (CougarPath)path.WanderPathType == CougarPath.Cougar ? true : false;
 
         protected void PreProcessingFollowPath()
         {
@@ -700,33 +715,37 @@ namespace ImprovedCougar
 
         private bool TryGetSavedWanderPath(SpawnModDataProxy proxy)
         {
-            if (proxy == null)
+            mFetchingWanderPath = true;
+            if (proxy == null
+                || proxy.CustomData == null
+                || proxy.CustomData.Length == 0)
             {
-                this.LogTraceInstanced("Null Proxy, getting new wander path");
+                this.LogTraceInstanced($"Null proxy, null proxy custom data or no length to proxy custom data");
                 return false;
             }
-            if (proxy.CustomData == null)
-            {
-                this.LogTraceInstanced($"Null custom data on proxy with guid <<<{proxy.Guid}>>>, getting new wander path");
-                return false;
-            }
-            if (proxy.CustomData.Length == 0)
-            {
-                this.LogTraceInstanced($"Zero-length custom data on proxy with guid <<<{proxy.Guid}>>>, getting new wander path");
-                return false;
-            }
-            Guid spotGuid = new Guid(proxy.CustomData[0]);
+            Guid spotGuid = new Guid((string)proxy.CustomData[0]);
             if (spotGuid == Guid.Empty)
             {
-                this.LogTraceInstanced($"Empty GUID on proxy with guid <<<{proxy.Guid}>>>, getting new wander path");
+                this.LogTraceInstanced($"Proxy spot guid is empty");
                 return false;
             }
-            if (!mManager.DataManager.AvailableWanderPaths.TryGetValue(spotGuid, out WanderPath wanderPath))
+            mManager.DataManager.ScheduleMapDataRequest<WanderPath>(new GetDataByGuidRequest<WanderPath>(spotGuid, proxy.Scene, (spot, result) =>
             {
-                this.LogTraceInstanced($"Could not fetch WanderPath with guid {spotGuid} from proxy with guid <<{proxy.Guid}>>>, getting new wander path");
-                return false;
-            }
-            AttachWanderPath(wanderPath);
+                if (result != RequestResult.Succeeded)
+                {
+                    this.LogTraceInstanced($"Can't get WanderPath with guid <<<{spotGuid}>>> from dictionary, requesting nearest instead...");
+                    mManager.DataManager.ScheduleMapDataRequest<WanderPath>(new GetNearestMapDataRequest<WanderPath>(mBaseAi.transform.position, proxy.Scene, (nearestSpot, result2) =>
+                    {
+                        this.LogTraceInstanced($"Found new nearest WanderPath with guid <<<{nearestSpot}>>>");
+                        AttachWanderPath(nearestSpot);
+                    }, false, CheckIfWanderPathIsForCougar, 3));
+                }
+                else
+                {
+                    this.LogTraceInstanced($"Found saved WanderPath with guid <<<{spotGuid}>>>");
+                    AttachWanderPath(spot);
+                }
+            }, false));
             return true;
         }
 
@@ -838,11 +857,18 @@ namespace ImprovedCougar
             }
         }
 
+        //ensures the cougar never goes into imposter mode, ever
+        protected override bool TestIsImposterCustom(out bool isImposter)
+        {
+            isImposter = false;
+            return false;
+        }
+
         //debug
         private void DoOnUpdate()
         {
 
-            if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.UpArrow))
+            if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.RightArrow))
             {
                 Main.Logger.Log("Activating wander path mode!", ComplexLogger.FlaggedLoggingLevel.Debug);
                 SetupFollowPath();

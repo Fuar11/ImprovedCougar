@@ -21,6 +21,15 @@ namespace ImprovedCougar
         protected bool Initialize()
         {
             CustomCougar.CustomCougarSettings.AddToModSettings("Improved Cougar", MenuType.Both);
+            IMapDataManager ImapDataManager;
+            if(EAFManager.Instance.DataManager.MapDataManagers.TryGetValue(typeof(WanderPath), out ImapDataManager))
+            {
+
+                WanderPathManager wanderPathManager = (WanderPathManager)ImapDataManager;
+                wanderPathManager.ScheduleLoadAdditional("ImprovedCougar/WanderPaths.json");
+                Logger.Log("Loading paths from file.", FlaggedLoggingLevel.Trace);
+
+            }
             return EAFManager.Instance.RegisterSpawnableAi(typeof(CustomCougar), CustomCougar.CustomCougarSettings);
         }
 

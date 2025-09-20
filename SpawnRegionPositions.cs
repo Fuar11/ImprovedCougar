@@ -147,16 +147,19 @@ namespace ImprovedCougar
             {
                 foreach(var pos in spawns)
                 {
+
+                    Color color = Main.CustomCougarManager.currentSpawnRegion == pos ? Color.green : orange;
+
                     GameObject spawnRegionCylinder = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                     UnityEngine.Object.Destroy(spawnRegionCylinder.GetComponent<Collider>());
                     spawnRegionCylinder.transform.localScale = new Vector3(diameter, 100f, diameter);
                     spawnRegionCylinder.transform.position = pos;
-                    spawnRegionCylinder.GetComponent<Renderer>().material.color = orange;
+                    spawnRegionCylinder.GetComponent<Renderer>().material.color = color;
                     GameObject spawnRegionTop = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                     UnityEngine.Object.Destroy(spawnRegionTop.GetComponent<Collider>());
                     spawnRegionTop.transform.localScale = new Vector3(diameter * 3f, diameter * 3f, diameter * 3f);
                     spawnRegionTop.transform.position = pos + new Vector3(0, 100f, 0);
-                    spawnRegionTop.GetComponent<Renderer>().material.color = orange;
+                    spawnRegionTop.GetComponent<Renderer>().material.color = color;
                     spawnRegionTop.transform.SetParent(spawnRegionCylinder.transform);
                 }
             }
