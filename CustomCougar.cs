@@ -259,13 +259,13 @@ namespace ImprovedCougar
             }
             else
             {
-                
-
-                //needs obvious work
-                Main.Logger.Log("Attacking!", ComplexLogger.FlaggedLoggingLevel.Debug);
-                mBaseAi.SetAiMode(AiMode.Attack);
+                if(!IsPlayerFacingCougar(player, cougar))
+                {
+                    Main.Logger.Log("Attacking!", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    mBaseAi.SetAiMode(DetermineAttackType());
+                }
+                //else maybe do a fake charge?
             }
-
         }
 
         protected void ProcessHiding()
@@ -292,8 +292,15 @@ namespace ImprovedCougar
         {
             Transform player = GameManager.GetPlayerTransform();
             Transform cougar = mBaseAi.transform;
+            float currentDistance = Vector3.Distance(cougar.position, player.position);
 
-            //wait a few seconds to flee
+            //wait a few seconds to flee, but if the player gets too close, then unfreeze and attack!
+
+            if (currentDistance <= attackDistance)
+            {
+                //charge the player
+                SetAiMode(DetermineAttackType());
+            }
 
             timeSinceFreezing += Time.deltaTime;
             if (timeSinceFreezing > timeToFreezeFor || stopFreezing) //add some slight movements here, a cougar freezing isn't completely still, maybe, fact check this
@@ -637,6 +644,23 @@ namespace ImprovedCougar
 
             currentIndex = 0;
             timeSinceLastPath = 0f;
+        }
+
+        //attack
+
+        private AiMode DetermineAttackType() => Utils.RollChance(GetPlayerStrength()) ? AiMode.Attack : AiMode.PassingAttack;
+
+        private float GetPlayerStrength()
+        {
+            float playerStrength = 100;
+
+            if(GameManager.GetConditionComponent().GetNormalizedCondition() <= 55f) playerStrength -= 25f;
+            if (GameManager.GetFreezingComponent().GetFreezingLevel() == FreezingLevel.Freezing) playerStrength -= 10f;
+            if (GameManager.GetFatigueComponent().GetFatigueLevel() <= FatigueLevel.Tired) playerStrength -= 30f;
+            if (GameManager.GetHungerComponent().GetHungerLevel() <= HungerLevel.VeryHungry) playerStrength -= 10f;
+            if (GameManager.GetEncumberComponent().IsEncumbered()) playerStrength -= 35f;
+
+            return playerStrength;
         }
 
         //misc
