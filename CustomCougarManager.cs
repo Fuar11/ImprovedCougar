@@ -96,12 +96,12 @@ namespace ImprovedCougar
             {
                 UpdateSpawnRegion();
 
-                if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.Z))
+                /**if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.Z))
                 {
                     Main.Logger.Log("Moving spawn region using key press.", FlaggedLoggingLevel.Debug);
                     SetSpawnRegion();
                     if (toMoveSpawnRegion) UpdateCougarTerritory(latestRegion);
-                }
+                } **/
             }
         }
 

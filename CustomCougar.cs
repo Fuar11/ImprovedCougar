@@ -35,15 +35,11 @@ namespace ImprovedCougar
 
         public CustomCougar(IntPtr ptr) : base(ptr) { }
 
-        //this will be used for the cougar to wander outside of it's spawn territory
         protected WanderPath wanderPath;
         protected bool WanderPathConnected = false;
         protected bool mFetchingWanderPath = false;
         protected override float m_MinWaypointDistance { get { return 100.0f; } }
         protected override float m_MaxWaypointDistance { get { return 1000.0f; } }
-
-        //territory
-        private bool isInTerritory = true;
 
         //speeds
         private float currentSpeed = 0f;
@@ -161,7 +157,7 @@ namespace ImprovedCougar
                 if(currentDistance >= maxStalkDistance)
                 {
                     //go back to what it was doing before stalking, just patrolling for now
-                    mBaseAi.SetAiMode(AiMode.FollowWaypoints);
+                    SetupFollowPath();
                 }
 
                 timeSinceLastPath += Time.deltaTime;
@@ -454,11 +450,6 @@ namespace ImprovedCougar
 
 
             //this is where you can change out of state, since the main AiMode isn't being overridden
-
-        }
-
-        private void MaybeWanderOutOfTerritory()
-        {
 
         }
 
