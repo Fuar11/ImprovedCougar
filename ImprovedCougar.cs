@@ -21,6 +21,7 @@ namespace ImprovedCougar
         protected bool Initialize()
         {
             CustomCougar.CustomCougarSettings.AddToModSettings("Improved Cougar", MenuType.Both);
+
             IMapDataManager ImapDataManager;
             if(EAFManager.Instance.DataManager.MapDataManagers.TryGetValue(typeof(WanderPath), out ImapDataManager))
             {

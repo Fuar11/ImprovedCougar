@@ -42,7 +42,6 @@ namespace ImprovedCougar
         public static Vector3 MT_FarmHill = new Vector3(873.48f, 247.36f, 1299.84f); //hill towards the milton park from the farm
         public static Vector3 MT_Farm = new Vector3(468.21f, 267.26f, 1851.89f); //default position at farm
         public static Vector3 MT_WoodLot = new Vector3(1346.21f, 270.72f, 1498.89f); 
-        public static Vector3 MT_Tunnel = new Vector3(1346.21f, 270.72f, 1498.89f);
 
         public static Vector3 HRV_Stairsteps = new Vector3(331.21f, 119.21f, 732.03f); 
         public static Vector3 HRV_OffsetFalls = new Vector3(252.76f, 116.4f, 1174.4f); 
@@ -75,7 +74,7 @@ namespace ImprovedCougar
         public static Vector3 AC_ClimbersPlateau1 = new Vector3(-145.4f, 184.93f, -453.76f); //near climber's cave 
         public static Vector3 AC_ClimbersPlateau2 = new Vector3(-211.54f, 137.22f, -193.37f); //near the other cave on the plateau
         public static Vector3 AC_FireOverlook = new Vector3(381.54f, 199.49f, -75.8f); 
-        public static Vector3 AC_WaterfallBasin = new Vector3(-200f, 156.22f, -766.36f);
+        public static Vector3 AC_WaterfallBasin = new Vector3(-72f, 192.41f, 762.65f);
         public static Vector3 AC_NarrowFalls = new Vector3(546f, 99.65f, 500f);
 
         public static Vector3 FA_Junkers = new Vector3(-1125.44f, 303.96f, -1271.95f); //hills behind Junker's Paddock
@@ -91,13 +90,13 @@ namespace ImprovedCougar
 
         public static Vector3 SP_Teardrop1 = new Vector3(946.9f, 339.26f, -402.48f); //bottom of Ogre's Teardrop
         public static Vector3 SP_BasinPlateau = new Vector3(1085.2f, 278.4f, -13f); //small plateau in the valley basin
-        public static Vector3 SP_ClimbingSpot = new Vector3(628.92f, 219.96f, -505.9f); //climbing spot above the Last Lonely House
+        //public static Vector3 SP_ClimbingSpot = new Vector3(628.92f, 219.96f, -505.9f); //climbing spot above the Last Lonely House
         public static Vector3 SP_CaveRidge = new Vector3(1133.16f, 432.05f, 314.58f); //cliff face near the transition cave
         public static Vector3 SP_Teardrop2 = new Vector3(1078.3f, 494.64f, -655.15f); //top of Ogre's Teardrop
         public static Vector3 SP_PlaneCrash = new Vector3(1045.3f, 615.02f, -738.27f); 
         public static Vector3 SP_MiddlePlateau = new Vector3(24.1f, 531.07f, -768.09f); //plateau in the middle of the region (idk if i'll keep this one)
         public static Vector3 SP_Mine = new Vector3(46.06f, 650.88f, -1136.87f); 
-        public static Vector3 SP_FrozenWaterfalls = new Vector3(64.21f, 258.45f, -555.15f); //frozen waterfalls along the road up the mountain
+        public static Vector3 SP_FrozenWaterfalls = new Vector3(192.85f, 242.89f, 609.67f); //frozen waterfalls along the road up the mountain
         public static Vector3 SP_BanefulBridge = new Vector3(283.16f, 120.16f, 911.51f); //below baneful bridge
         public static Vector3 SP_HiddenPath = new Vector3(225.27f, 187.92f, 993.5f); //hidden path below baneful bridge
 
@@ -110,19 +109,19 @@ namespace ImprovedCougar
                 case "RuralRegion":
                     return new List<Vector3>() { PV_MountainRoad, PV_SignalHill, PV_PicnicArea, PV_ThompsonForest, PV_ThompsonWaterfall, PV_MiningRoad, PV_DerelictCabins, PV_MisticFalls, PV_SkeetersRidge, PV_Backroad, PV_ThreeStrikes, PV_RiverWoods };
                 case "MountainTownRegion":
-                    return new List<Vector3>() { MT_PlanePath, MT_CaveField, MT_LoggingTrailer, MT_Church, MT_FarmHill, MT_Farm, MT_WoodLot, MT_Tunnel };
+                    return new List<Vector3>() { MT_PlanePath, MT_CaveField, MT_LoggingTrailer, MT_Church, MT_FarmHill, MT_Farm, MT_WoodLot};
                 case "RiverValleyRegion":
                     return new List<Vector3>() { HRV_Stairsteps, HRV_OffsetFalls, HRV_NorthCliffs, HRV_MonolithLake, HRV_MammothFalls2, HRV_HushedRiverForest };
                 case "BlackrockRegion":
                     return new List<Vector3>() { BR_BearBend, BR_Bricklayers, BR_ClearCutPath, BR_CuttysCave, BR_ForagerRemnant, BR_HuntingBlind, BR_JailersResidence, BR_SprucePatch, BR_Substation };
-                case "MountainCrashRegion":
+                case "CrashMountainRegion":
                     return new List<Vector3>() { TWM_AndresPeak, TWM_Backside, TWM_Entrance, TWM_EricsFalls, TWM_RavineRidge, TWM_River, TWM_Wing };
                 case "AshCanyonRegion":
                     return new List<Vector3>() { AC_BirchForest, AC_Bunker, AC_ClimbersPlateau1, AC_ClimbersPlateau2, AC_FireOverlook, AC_NarrowFalls, AC_PillarsFootrest, AC_WaterfallBasin };
                 case "AirfieldRegion":
                     return new List<Vector3>() { FA_ChopperCrash, FA_FrozenRiver, FA_Junkers, FA_JustysHovel, FA_MindfulCabin, FA_MindfulCabin2, FA_RoadForest, FA_Shortcut, FA_TransitionCave, FA_WaterfallPlateau };
                 case "MountainPassRegion":
-                    return new List<Vector3>() { SP_BanefulBridge, SP_BasinPlateau, SP_CaveRidge, SP_ClimbingSpot, SP_FrozenWaterfalls, SP_HiddenPath, SP_MiddlePlateau, SP_Mine, SP_PlaneCrash, SP_Teardrop1, SP_Teardrop2 };
+                    return new List<Vector3>() { SP_BanefulBridge, SP_BasinPlateau, SP_CaveRidge, SP_FrozenWaterfalls, SP_HiddenPath, SP_MiddlePlateau, SP_Mine, SP_PlaneCrash, SP_Teardrop1, SP_Teardrop2 };
                 default: return null;
             }
         }

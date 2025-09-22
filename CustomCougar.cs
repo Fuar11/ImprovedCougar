@@ -160,7 +160,8 @@ namespace ImprovedCougar
 
                 if(currentDistance >= maxStalkDistance)
                 {
-                    //go back to what it was doing before stalking
+                    //go back to what it was doing before stalking, just patrolling for now
+                    mBaseAi.SetAiMode(AiMode.FollowWaypoints);
                 }
 
                 timeSinceLastPath += Time.deltaTime;
@@ -248,7 +249,7 @@ namespace ImprovedCougar
                     //if no path found it probably means there is no cover nearby, so it isn't stealthy enough to keep stalking. If close enough keep going 
 
                     //i can probably change this to detect for allowed areas or something
-                    Main.Logger.Log("Cougar is in open area, maybe!", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    Main.Logger.Log("Cougar is in open area!", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                     if (currentDistance <= 35)
                     {
@@ -258,8 +259,6 @@ namespace ImprovedCougar
                     {
                         mBaseAi.SetAiMode((AiMode)CustomCougarAiMode.Retreat);
                     } 
-
-
                 }
             }
             else
@@ -337,7 +336,7 @@ namespace ImprovedCougar
             if (retreatPosition == Vector3.zero)
             {
                 retreatPosition = spawnPosition;
-                Main.Logger.Log("Retreat position is invalid. Falling back to spawn location instead", ComplexLogger.FlaggedLoggingLevel.Debug);
+                Main.Logger.Log("Retreat position is invalid. Falling back to spawn location.", ComplexLogger.FlaggedLoggingLevel.Debug);
             }
             mBaseAi.StartPath(retreatPosition, currentSpeed);
 
@@ -346,7 +345,7 @@ namespace ImprovedCougar
                 if (retreatPosition == spawnPosition)
                 {
                     Main.Logger.Log("Cougar has reached it's territory, going back to wandering", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    mBaseAi.SetAiMode(AiMode.Stalking); //temporary until we get wander/patrol working
+                    mBaseAi.SetAiMode(AiMode.FollowWaypoints); 
                 }
                 else
                 {
