@@ -3,6 +3,7 @@ using Il2Cpp;
 using ExpandedAiFramework;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine;
+using ImprovedCougar.SpawnRegions;
 
 namespace ImprovedCougar
 {

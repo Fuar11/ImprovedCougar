@@ -1,6 +1,8 @@
 ﻿using ComplexLogger;
 using ExpandedAiFramework;
 using Il2Cpp;
+using Il2CppTLD.AI;
+using ImprovedCougar.SpawnRegions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,14 +10,21 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static Il2Cpp.CarcassSite;
 
 namespace ImprovedCougar
 {
     [RegisterTypeInIl2Cpp]
-    internal class CustomCougarManager : MonoBehaviour
+    internal class CustomCougarManager : MonoBehaviour, ISubManager
     {
 
+        protected EAFManager mManager;
+
         //spawn region
+
+        public SpawnRegion spawnRegion = null;
+
+        //spawn region positions
         public Vector3? currentSpawnRegion = Vector3.zero;
 
         public Vector3? lastSpawnRegionML = null;
@@ -50,7 +59,6 @@ namespace ImprovedCougar
         public int maxTimeTillCougarArrivalInDays = 2; //Settings.CustomSettings.settings.maxTimeToArrive; 
         public int minTimeTillCougarArrivalInDays = 1; //Settings.CustomSettings.settings.minTimeToArrive; 
 
-
         public void Start()
         {
 
@@ -59,7 +67,7 @@ namespace ImprovedCougar
 
             //call load data stuff here
 
-            //if load data null
+            //if load data null 
            
             if(!cougarArrived && daysToArrive == 0)
             {
@@ -96,12 +104,13 @@ namespace ImprovedCougar
             {
                 UpdateSpawnRegion();
 
-                /**if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.Z))
+                //debug
+                if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.Z))
                 {
                     Main.Logger.Log("Moving spawn region using key press.", FlaggedLoggingLevel.Debug);
                     SetSpawnRegion();
-                    if (toMoveSpawnRegion) UpdateCougarTerritory(latestRegion);
-                } **/
+                    if (toMoveSpawnRegion) UpdateCougarSpawnRegionPosition(latestRegion);
+                } 
             }
         }
 
@@ -130,7 +139,7 @@ namespace ImprovedCougar
                     latestRegion = SceneUtilities.GetActiveSceneName();
                 }
 
-                if (toMoveSpawnRegion) UpdateCougarTerritory(latestRegion);
+                if (toMoveSpawnRegion) UpdateCougarSpawnRegionPosition(latestRegion);
             }
         }
         public void SetSpawnRegion()
@@ -161,7 +170,7 @@ namespace ImprovedCougar
             Main.Logger.Log($"New spawn region {currentSpawnRegion} set!", FlaggedLoggingLevel.Debug);
         }
 
-        public void UpdateCougarTerritory(string scene)
+        public void UpdateCougarSpawnRegionPosition(string scene)
         {
 
             if (RegionHasCougar(scene))
@@ -194,29 +203,8 @@ namespace ImprovedCougar
                 territoryObject.transform.GetChild(1).gameObject.SetActive(true); //set audio object to true
                 territoryObject.transform.GetChild(2).gameObject.SetActive(true); //set wander region object to true, idk if this is used
 
-                SpawnRegion sr = spawnRegionObject.GetComponent<SpawnRegion>();
-                Il2Cpp.SpawnRegionManager spawnRegionManager = GameManager.GetSpawnRegionManager();
-
-                if (sr != null)
-                {
-                    sr.m_Center = sr.transform.position;
-                    if (!sr.m_Registered)
-                    {
-                        if (spawnRegionManager != null)
-                        {
-                            spawnRegionManager.Add(sr);
-                            sr.m_Registered = true;
-                        }
-                    }
-                }
-
-                if (spawnRegionManager != null)
-                {
-
-                    spawnRegionManager.MaybeEnableSpawnRegionsInRange(sr, 100, true);
-
-                }
-
+                //I don't know how this spawn region is set to active, or whatever equivalent we have in eaf
+                spawnRegion = spawnRegionObject.GetComponent<SpawnRegion>();
             }
 
             toMoveSpawnRegion = false;
@@ -313,6 +301,56 @@ namespace ImprovedCougar
         {
             return latestRegion != SceneUtilities.GetActiveSceneName() ? true : false;
         }
+
+        public void Initialize(EAFManager manager)
+        {
+            mManager = manager;
+            Main.Logger.Log("CustomCougarManager initialized!", FlaggedLoggingLevel.Always);
+        }
+
+        void ISubManager.Update()
+        {
+        }
+
+        public void Shutdown()
+        {
+        }
+
+        public void OnStartNewGame()
+        {
+        }
+
+        public void OnLoadScene(string sceneName)
+        {
+        }
+
+        public void OnInitializedScene(string sceneName)
+        {
+        }
+
+        public void OnSaveGame()
+        {
+        }
+
+        public void OnLoadGame()
+        {
+        }
+
+        public void OnQuitToMainMenu()
+        {
+        }
+
+        public bool ShouldInterceptSpawn(CustomSpawnRegion region) => false;
+
+
+        public void PostProcessNewSpawnModDataProxy(SpawnModDataProxy proxy)
+        {
+
+            proxy.ForceSpawn = true;
+
+        }
+
+        public Type SpawnType { get { return typeof(CustomCougarSpawnRegion); } }
 
     }
 }
