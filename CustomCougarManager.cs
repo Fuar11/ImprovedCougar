@@ -20,10 +20,6 @@ namespace ImprovedCougar
 
         protected EAFManager mManager;
 
-        //spawn region
-
-        public SpawnRegion spawnRegion = null;
-
         //spawn region positions
         public Vector3? currentSpawnRegion = Vector3.zero;
 
@@ -204,7 +200,18 @@ namespace ImprovedCougar
                 territoryObject.transform.GetChild(2).gameObject.SetActive(true); //set wander region object to true, idk if this is used
 
                 //I don't know how this spawn region is set to active, or whatever equivalent we have in eaf
-                spawnRegion = spawnRegionObject.GetComponent<SpawnRegion>();
+                SpawnRegion spawnRegion = spawnRegionObject.GetComponent<SpawnRegion>();
+                if (spawnRegion != null && spawnRegion.m_Registered == false)
+                {
+                    Main.Logger.Log($"Adding and registering SpawnRegion in region {GameManager.m_ActiveScene}", FlaggedLoggingLevel.Debug);
+                    mManager.SpawnRegionManager.Add(spawnRegion);
+                    spawnRegion.m_Registered = true; //idk if this is needed anymore
+                }
+                else
+                {
+                    Main.Logger.Log("Cannot find SpawnRegion!", FlaggedLoggingLevel.Error);
+                    return;
+                }
             }
 
             toMoveSpawnRegion = false;
@@ -308,7 +315,7 @@ namespace ImprovedCougar
             Main.Logger.Log("CustomCougarManager initialized!", FlaggedLoggingLevel.Always);
         }
 
-        void ISubManager.Update()
+        public void UpdateFromManager()
         {
         }
 
