@@ -66,6 +66,7 @@ namespace ImprovedCougar
                         UnityEngine.Object.Instantiate(ccm, GameManager.GetVpFPSPlayer().transform);
                         GameObject.DontDestroyOnLoad(ccm);
                         CustomCougarManager ??= ccm.AddComponent<CustomCougarManager>();
+                        EAFManager.Instance.RegisterSubmanager(typeof(CustomCougar), CustomCougarManager);
                     }
                     else
                     {
