@@ -36,6 +36,12 @@ namespace ImprovedCougar
                 return mVanillaManager;
             }
         }
+        
+        bool ICougarManager.OverrideCustomSpawnRegionType(SpawnRegion spawnRegion, SpawnRegionModDataProxy proxy, TimeOfDay timeOfDay, out CustomSpawnRegion customSpawnRegion)
+        {
+            customSpawnRegion = new CustomCougarSpawnRegion(spawnRegion, proxy, timeOfDay);
+            return false;
+        }
 
         // Because you are running as a mono and not running on EAF's loop, these are important to prevent running during main menu and such
         public bool IsMenuScene = true; // initialize TRUE to prevent updates at start during main menu
@@ -231,6 +237,8 @@ namespace ImprovedCougar
 
                 //I don't know how this spawn region is set to active, or whatever equivalent we have in eaf
                 spawnRegion = spawnRegionObject.GetComponent<SpawnRegion>();
+                // merry christmas, mf
+                EAFManager.Instance.SpawnRegionManager.Add(spawnRegion);
             }
 
             toMoveSpawnRegion = false;
