@@ -11,7 +11,7 @@ namespace ImprovedCougar.Patches
 {
     internal class CougarPatches
     {
-
+        // Nick: Do an override on CustomCougar.EnterAiMode() with a catch on AiMode.Dead, I'm not 100% sure this will fire anymore with EAF.
         [HarmonyPatch(nameof(AiCougar), nameof(AiCougar.EnterDead))]
 
         public class WhenKilled
@@ -27,6 +27,7 @@ namespace ImprovedCougar.Patches
             }
         }
 
+        // This should still work, but plan for it to appear in EAF instead eventually :)
         [HarmonyPatch(nameof(CougarManager), nameof(CougarManager.MaybeSetThreatLevel))]
 
         public class DisableOtherTerritory
@@ -39,8 +40,8 @@ namespace ImprovedCougar.Patches
 
         }
 
+        // This 100% needs to be moved somewhere else, SpawnRegion.InstantiateSpawnInternal is dead in the water with EAF.
         [HarmonyPatch(typeof(SpawnRegion), nameof(SpawnRegion.InstantiateSpawnInternal), new Type[] { typeof(GameObject), typeof(WildlifeMode), typeof(Vector3), typeof(Quaternion) })]
-
         public class AdjustSpawnPoints
         {
 
