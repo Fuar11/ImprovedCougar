@@ -1,4 +1,5 @@
-﻿using ComplexLogger;
+﻿global using VanillaCougarManager = Il2CppTLD.AI.CougarManager;
+using ComplexLogger;
 using ExpandedAiFramework;
 using Il2Cpp;
 using Il2CppTLD.AI;
@@ -10,15 +11,44 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using ModData;
+using MelonLoader.TinyJSON; 
 using static Il2Cpp.CarcassSite;
 
 namespace ImprovedCougar
 {
     [RegisterTypeInIl2Cpp]
-    internal class CustomCougarManager : MonoBehaviour, ISubManager
+    internal class CustomCougarManager : MonoBehaviour, ICougarManager
     {
+        // Logger (though you can also use EAF's which is thread safe)
+        internal static ComplexLogger<Main> Logger = new();
+
+        // EAF ICougarManager Implementation
+        protected VanillaCougarManager mVanillaManager;
+        public VanillaCougarManager VanillaCougarManager
+        { 
+            get 
+            {
+                if (mVanillaManager == null)
+                {
+                    mVanillaManager = GameManager.m_CougarManager;
+                }
+                return mVanillaManager;
+            }
+        }
+
+        // Because you are running as a mono and not running on EAF's loop, these are important to prevent running during main menu and such
+        public bool IsMenuScene = true; // initialize TRUE to prevent updates at start during main menu
+        public bool HasStarted = true; // initialize TRUE to prevent start running in main menu
+        
+        // ModData 
+        private ModDataManager modData = new ModDataManager("ImprovedCougar", false);
 
         protected EAFManager mManager;
+
+        //spawn region
+
+        public SpawnRegion spawnRegion = null;
 
         //spawn region positions
         public Vector3? currentSpawnRegion = Vector3.zero;
@@ -53,36 +83,36 @@ namespace ImprovedCougar
 
         public int daysToArrive = 0;
         public int maxTimeTillCougarArrivalInDays = 2; //Settings.CustomSettings.settings.maxTimeToArrive; 
-        public int minTimeTillCougarArrivalInDays = 1; //Settings.CustomSettings.settings.minTimeToArrive; 
+        public int minTimeTillCougarArrivalInDays = 1; //Settings.CustomSettings.settings.minTimeToArrive;
+
+        [Serializable]
+        private class LoadData 
+        {
+            public bool CougarArrived;
+            public int DaysToArrive;
+            public LoadData() {}
+        }
+
 
         public void Start()
         {
+            if (HasStarted)
+            {
+                return;
+            }
+            HasStarted = true;
 
             //i think this checks if the feature is enabled
             if (!GameManager.GetCougarManager().IsEnabled) return;
 
-            //call load data stuff here
-
-            //if load data null 
-           
-            if(!cougarArrived && daysToArrive == 0)
-            {
-                var random = new System.Random();
-
-                daysToArrive += random.Next(maxTimeTillCougarArrivalInDays, maxTimeTillCougarArrivalInDays);
-
-                //debug
-                cougarArrived = true;
-                //remove this after
-            }
-
-
+            // You can do other stuff here if you want, I configured this to run every scene start based on EAF's timing of InitializeScene
+            // But honestly now that it's persistent across saves and uses ModData properly, you can probably just drop Start()...
         }
 
         public void Update()
         {
-
-            if(GameManager.m_IsPaused || GameManager.s_IsGameplaySuspended) return;
+            if (IsMenuScene) return;
+            if (GameManager.m_IsPaused || GameManager.s_IsGameplaySuspended) return;
             if (SaveGameSystem.IsRestoreInProgress()) return;
             if (!GameManager.GetCougarManager().IsEnabled) return;
 
@@ -200,18 +230,7 @@ namespace ImprovedCougar
                 territoryObject.transform.GetChild(2).gameObject.SetActive(true); //set wander region object to true, idk if this is used
 
                 //I don't know how this spawn region is set to active, or whatever equivalent we have in eaf
-                SpawnRegion spawnRegion = spawnRegionObject.GetComponent<SpawnRegion>();
-                if (spawnRegion != null && spawnRegion.m_Registered == false)
-                {
-                    Main.Logger.Log($"Adding and registering SpawnRegion in region {GameManager.m_ActiveScene}", FlaggedLoggingLevel.Debug);
-                    mManager.SpawnRegionManager.Add(spawnRegion);
-                    spawnRegion.m_Registered = true; //idk if this is needed anymore
-                }
-                else
-                {
-                    Main.Logger.Log("Cannot find SpawnRegion!", FlaggedLoggingLevel.Error);
-                    return;
-                }
+                spawnRegion = spawnRegionObject.GetComponent<SpawnRegion>();
             }
 
             toMoveSpawnRegion = false;
@@ -315,7 +334,7 @@ namespace ImprovedCougar
             Main.Logger.Log("CustomCougarManager initialized!", FlaggedLoggingLevel.Always);
         }
 
-        public void UpdateFromManager()
+        void ISubManager.UpdateFromManager()
         {
         }
 
@@ -332,15 +351,60 @@ namespace ImprovedCougar
         }
 
         public void OnInitializedScene(string sceneName)
-        {
+        {            
+            if (SceneUtilities.IsSceneMenu(sceneName))
+            {
+                IsMenuScene = true;
+                return;
+            }
+            if (SceneUtilities.IsScenePlayable(sceneName) 
+                && !sceneName.Contains("_SANDBOX")
+                && !sceneName.Contains("_DLC") 
+                && !sceneName.Contains("_WILDLIFE") 
+                && !sceneName.Contains("_VFX"))
+            {
+                Logger.Log("Setting toMoveSpawnRegion to true", FlaggedLoggingLevel.Debug);
+                toMoveSpawnRegion = true;
+                IsMenuScene = false;
+            }
         }
 
         public void OnSaveGame()
         {
+            LoadData loadData = new LoadData();
+            loadData.CougarArrived = cougarArrived;
+            loadData.DaysToArrive = daysToArrive;
+            string json = JSON.Dump(loadData, EncodeOptions.PrettyPrint | EncodeOptions.NoTypeHints);
+            if (json == null || json == string.Empty)
+            {
+                return;
+            }
+            modData.Save(json, "LoadData");
         }
 
         public void OnLoadGame()
-        {
+        {         
+            string loadDataJSON = modData.Load("LoadData");
+            if (string.IsNullOrEmpty(loadDataJSON))
+            {
+                return;
+            }
+            Variant loadDataVariant = JSON.Load(loadDataJSON);
+            LoadData loadData = new LoadData();
+            JSON.Populate(loadDataVariant, loadData);
+            if(!loadData.CougarArrived && loadData.DaysToArrive == 0)
+            {
+                var random = new System.Random();
+
+                loadData.DaysToArrive += random.Next(maxTimeTillCougarArrivalInDays, maxTimeTillCougarArrivalInDays);
+
+                //debug
+                loadData.CougarArrived = true;
+                //remove this after
+            }
+            
+            daysToArrive = loadData.DaysToArrive;
+            cougarArrived = loadData.CougarArrived;
         }
 
         public void OnQuitToMainMenu()
@@ -352,9 +416,7 @@ namespace ImprovedCougar
 
         public void PostProcessNewSpawnModDataProxy(SpawnModDataProxy proxy)
         {
-
             proxy.ForceSpawn = true;
-
         }
 
         public Type SpawnType { get { return typeof(CustomCougarSpawnRegion); } }

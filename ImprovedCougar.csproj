@@ -33,6 +33,12 @@
 			<HintPath>$(TheLongDarkPath)\Mods\ExpandedAiFramework.dll</HintPath>
 		</Reference>
 	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="ModData">
+			<HintPath>$(TheLongDarkPath)\Mods\ModData.dll</HintPath>
+		</Reference>
+	</ItemGroup>
 	
 	<ItemGroup>
 		<Using Include="System.Reflection" />
@@ -43,6 +49,7 @@
 		<Using Include="UnityEngine" />
 		<Using Include="ModSettings" />
 		<Using Include="ModComponent" />
+		<Using Include="ModData" />
 		<Using Include="LocalizationUtilities" />
 		<Using Include="CraftingRevisions" />
 		<Using Include="GearSpawner" />

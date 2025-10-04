@@ -22,8 +22,8 @@ namespace ImprovedCougar
         protected bool Initialize()
         {
             CustomCougar.CustomCougarSettings.AddToModSettings("Improved Cougar", MenuType.Both);
-
             IMapDataManager ImapDataManager;
+
             if(EAFManager.Instance.DataManager.MapDataManagers.TryGetValue(typeof(WanderPath), out ImapDataManager))
             {
 
@@ -32,7 +32,9 @@ namespace ImprovedCougar
                 Logger.Log("Loading paths from file.", FlaggedLoggingLevel.Trace);
 
             }
+
             return EAFManager.Instance.RegisterSpawnableAi(typeof(CustomCougar), CustomCougar.CustomCougarSettings);
+
         }
 
         public override void OnUpdate()
@@ -46,42 +48,16 @@ namespace ImprovedCougar
 
         }
 
+        // This now instantiates only once. Moved other things to EAF scene trigger handlers.
         public override void OnSceneWasInitialized(int buildIndex, string sceneName)
         {
-            if (SceneUtilities.IsSceneMenu(sceneName))
+            if (CustomCougarManager == null)
             {
-                GameObject.Destroy(GameObject.Find("CustomCougarManager"));
-                CustomCougarManager = null;
-                return;
+                GameObject ccm = new() { name = "CustomCougarManager", layer = vp_Layer.Default };
+                GameObject.DontDestroyOnLoad(ccm);
+                CustomCougarManager ??= ccm.AddComponent<CustomCougarManager>();
+                EAFManager.Instance.HotSwapSubManager(EAFManager.HotSwappableSubManagers.CougarManager, CustomCougarManager);
             }
-            if (SceneUtilities.IsScenePlayable(sceneName))
-            {
-
-                if (!sceneName.Contains("_SANDBOX") && !sceneName.Contains("_DLC") && !sceneName.Contains("_WILDLIFE") && !sceneName.Contains("_VFX"))
-                {
-
-                    if (CustomCougarManager == null)
-                    {
-                        GameObject ccm = new() { name = "CustomCougarManager", layer = vp_Layer.Default };
-                        UnityEngine.Object.Instantiate(ccm, GameManager.GetVpFPSPlayer().transform);
-                        GameObject.DontDestroyOnLoad(ccm);
-                        CustomCougarManager ??= ccm.AddComponent<CustomCougarManager>();
-                        EAFManager.Instance.RegisterSubmanager(typeof(CustomCougar), CustomCougarManager);
-                    }
-                    else
-                    {
-                        Logger.Log("Setting toMoveSpawnRegion to true", FlaggedLoggingLevel.Debug);
-                        CustomCougarManager.toMoveSpawnRegion = true;
-                    }
-                }
-            }
-           
-
         }
-
-        
-
-
-
     }
 }
