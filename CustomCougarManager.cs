@@ -109,7 +109,7 @@ namespace ImprovedCougar
             HasStarted = true;
 
             //i think this checks if the feature is enabled
-            if (!GameManager.GetCougarManager().IsEnabled) return;
+            if (!VanillaCougarManager.IsEnabled) return;
 
             // You can do other stuff here if you want, I configured this to run every scene start based on EAF's timing of InitializeScene
             // But honestly now that it's persistent across saves and uses ModData properly, you can probably just drop Start()...
@@ -235,10 +235,8 @@ namespace ImprovedCougar
                 territoryObject.transform.GetChild(1).gameObject.SetActive(true); //set audio object to true
                 territoryObject.transform.GetChild(2).gameObject.SetActive(true); //set wander region object to true, idk if this is used
 
-                //I don't know how this spawn region is set to active, or whatever equivalent we have in eaf
                 spawnRegion = spawnRegionObject.GetComponent<SpawnRegion>();
-                // merry christmas, mf
-                EAFManager.Instance.SpawnRegionManager.Add(spawnRegion);
+                mManager.SpawnRegionManager.Add(spawnRegion);
             }
 
             toMoveSpawnRegion = false;
@@ -421,13 +419,12 @@ namespace ImprovedCougar
 
         public bool ShouldInterceptSpawn(CustomSpawnRegion region) => false;
 
-
         public void PostProcessNewSpawnModDataProxy(SpawnModDataProxy proxy)
         {
             proxy.ForceSpawn = true;
         }
 
-        public Type SpawnType { get { return typeof(CustomCougarSpawnRegion); } }
+        public Type SpawnType { get { return typeof(CustomCougar); } }
 
     }
 }
