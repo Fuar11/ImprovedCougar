@@ -38,6 +38,7 @@ namespace ImprovedCougar
         protected WanderPath wanderPath;
         protected bool WanderPathConnected = false;
         protected bool mFetchingWanderPath = false;
+        protected bool toStartFollowWanderPathMode = true;
         protected override float m_MinWaypointDistance { get { return 100.0f; } }
         protected override float m_MaxWaypointDistance { get { return 1000.0f; } }
 
@@ -100,7 +101,7 @@ namespace ImprovedCougar
             mBaseAi.m_WaypointCompletionBehaviour = BaseAi.WaypointCompletionBehaviouir.Restart;
             mBaseAi.m_TargetWaypointIndex = 0;
 
-            Main.Logger.Log("Cougar initialized", ComplexLogger.FlaggedLoggingLevel.Debug);
+            Main.Logger.Log($"Cougar initialized at position {mBaseAi.gameObject.transform.position.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
         }
 
         protected override bool ProcessCustom()
@@ -108,6 +109,7 @@ namespace ImprovedCougar
 
             //Main.Logger.Log("Processing custom cougar logic", ComplexLogger.FlaggedLoggingLevel.Debug);
 
+            DoStartFollowWanderPathFirstFrame();
             DoOnUpdate();
 
             switch (CurrentMode)
@@ -157,7 +159,7 @@ namespace ImprovedCougar
                 if(currentDistance >= maxStalkDistance)
                 {
                     //go back to what it was doing before stalking, just patrolling for now
-                    SetupFollowPath();
+                    StartFollowWanderPath();
                 }
 
                 timeSinceLastPath += Time.deltaTime;
@@ -419,7 +421,12 @@ namespace ImprovedCougar
             Main.Logger.Log("Cougar is retreating!", ComplexLogger.FlaggedLoggingLevel.Debug);
         }
 
-        protected void SetupFollowPath()
+        protected void DoStartFollowWanderPathFirstFrame()
+        {
+            if (toStartFollowWanderPathMode) StartFollowWanderPath();
+        }
+
+        protected void StartFollowWanderPath()
         {
             Transform player = GameManager.GetPlayerTransform();
             Transform cougar = mBaseAi.transform;
@@ -448,9 +455,20 @@ namespace ImprovedCougar
             mBaseAi.m_AiGoalSpeed = wanderSpeed;
             mBaseAi.SetAiMode(AiMode.FollowWaypoints);
             Main.Logger.Log($"Following path {wanderPath.Guid.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+
+            toStartFollowWanderPathMode = false;
+
+            //debug
+            DebugTools.CreateDebugMarker(cougar.position, Color.magenta, 15f);
+
         }
 
-        public bool CheckIfWanderPathIsForCougar(WanderPath path) => (CougarPath)path.WanderPathType == CougarPath.Cougar ? true : false;
+        public bool CheckIfWanderPathIsForCougar(WanderPath path)
+        {
+            if ((CougarPath)path.WanderPathType == CougarPath.Cougar) Main.Logger.Log("WanderPath is Cougar wanderpath", ComplexLogger.FlaggedLoggingLevel.Debug);
+            else Main.Logger.Log("WanderPath is NOT cougar path.", ComplexLogger.FlaggedLoggingLevel.Debug);
+            return (CougarPath)path.WanderPathType == CougarPath.Cougar ? true : false;
+        }  
 
         protected void PreProcessingFollowPath()
         {
@@ -885,7 +903,7 @@ namespace ImprovedCougar
             if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.RightArrow))
             {
                 Main.Logger.Log("Activating wander path mode!", ComplexLogger.FlaggedLoggingLevel.Debug);
-                SetupFollowPath();
+                StartFollowWanderPath();
             }
 
         }

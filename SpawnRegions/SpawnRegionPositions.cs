@@ -100,6 +100,9 @@ namespace ImprovedCougar.SpawnRegions
         public static Vector3 SP_BanefulBridge = new Vector3(283.16f, 120.16f, 911.51f); //below baneful bridge
         public static Vector3 SP_HiddenPath = new Vector3(225.27f, 187.92f, 993.5f); //hidden path below baneful bridge
 
+        public static List<GameObject> cylMarkers = new List<GameObject>();
+        public static List<GameObject> topMarkers = new List<GameObject>();
+
         private static List<Vector3> GetSpawnRegionsByRegion(string region)
         {
             switch (region)
@@ -138,6 +141,12 @@ namespace ImprovedCougar.SpawnRegions
 
         public static void AddMarkersToSpawnRegions(string region)
         {
+
+            cylMarkers.ForEach(marker => GameObject.Destroy(marker));
+            topMarkers.ForEach(marker => GameObject.Destroy(marker));
+            cylMarkers.Clear();
+            topMarkers.Clear();
+
             List<Vector3> spawns = GetSpawnRegionsByRegion(region);
             var diameter = 5f;
             Color orange = new Color(1.0f, 0.64f, 0.0f);
@@ -154,12 +163,17 @@ namespace ImprovedCougar.SpawnRegions
                     spawnRegionCylinder.transform.localScale = new Vector3(diameter, 100f, diameter);
                     spawnRegionCylinder.transform.position = pos;
                     spawnRegionCylinder.GetComponent<Renderer>().material.color = color;
+
+                    cylMarkers.Add(spawnRegionCylinder);
+
                     GameObject spawnRegionTop = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                     UnityEngine.Object.Destroy(spawnRegionTop.GetComponent<Collider>());
                     spawnRegionTop.transform.localScale = new Vector3(diameter * 3f, diameter * 3f, diameter * 3f);
                     spawnRegionTop.transform.position = pos + new Vector3(0, 100f, 0);
                     spawnRegionTop.GetComponent<Renderer>().material.color = color;
                     spawnRegionTop.transform.SetParent(spawnRegionCylinder.transform);
+
+                    topMarkers.Add(spawnRegionTop);
                 }
             }
 
