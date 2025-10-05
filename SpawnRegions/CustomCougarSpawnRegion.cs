@@ -16,6 +16,11 @@ namespace ImprovedCougar.SpawnRegions
 
         protected override bool OverrideCalculateTargetPopulation(out int customTarget)
         {
+            if (VanillaSpawnRegion.m_WildlifeMode == WildlifeMode.Aurora)
+            {
+                customTarget = 0;
+                return false;
+            }
             // if cougar alive, return 1
             // if cougar dead or not ready to appear, return 0
             customTarget = 1 - mSpawnRegion.m_NumRespawnsPending; // this will work per region, but wont take into account a cougar that lives in multiple game zones or something
