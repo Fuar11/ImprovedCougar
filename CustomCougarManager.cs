@@ -100,19 +100,37 @@ namespace ImprovedCougar
         }
 
 
-        public void Start()
+        // once past "HasStarted = true", the only thing here that probably matters to you is "mVanillaManager.IsEnabled = true" which is what vailla does on Start()
+        // I am overriding CougarManager.Start now, and I'm handling that within EAF's native cougarmanager so at minimum you need to enable the vanilla manager here
+        // (this is all assuming you continue to rely on that flag - the most important part is "Il2CppTLD.AI.CougarManager.s_EnableInNewGame" flag!)
+        public void OverrideStart()
         {
-            if (HasStarted)
+            if (HasStarted) return;
+            if (ShouldAbortStart()) 
             {
+                if (mVanillaManager != null)
+                {
+                    mVanillaManager.IsEnabled = false;
+                }
                 return;
             }
             HasStarted = true;
+            VanillaCougarManager.s_CougarSettingsOverride = false;
+            VanillaCougarManager.m_CurrentThreatLevelByRegion.Clear();
+            mVanillaManager.m_CurrentThreatCooldownByRegion.Clear();
+            mVanillaManager.IsEnabled = true;
+            mVanillaManager.m_Cougar_TerritoryZone_EnterID = 0;
+            mVanillaManager.m_Cougar_TerritoryZone_ExitID = 0;
+            mVanillaManager.m_Cougar_NearbyOutsideID = 0;
+            VanillaCougarManager.SetAudioState(mVanillaManager.m_CougarTerritory_ZoneThreatLevel_ctztl_0);
+        }
 
-            //i think this checks if the feature is enabled
-            if (!VanillaCougarManager.IsEnabled) return;
-
-            // You can do other stuff here if you want, I configured this to run every scene start based on EAF's timing of InitializeScene
-            // But honestly now that it's persistent across saves and uses ModData properly, you can probably just drop Start()...
+        private bool ShouldAbortStart()
+        {            
+            if (!VanillaCougarManager.GetCougarSettings(true)) return true;
+            if (!VanillaCougarManager.s_EnableInNewGame) return true;
+            if (VanillaCougarManager == null) return true;
+            return false;
         }
 
         public void Update()
@@ -361,6 +379,7 @@ namespace ImprovedCougar
             if (SceneUtilities.IsSceneMenu(sceneName))
             {
                 IsMenuScene = true;
+                HasStarted = false;
                 return;
             }
             if (SceneUtilities.IsScenePlayable(sceneName) 
