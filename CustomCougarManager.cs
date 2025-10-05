@@ -45,7 +45,7 @@ namespace ImprovedCougar
 
         // Because you are running as a mono and not running on EAF's loop, these are important to prevent running during main menu and such
         public bool IsMenuScene = true; // initialize TRUE to prevent updates at start during main menu
-        public bool HasStarted = true; // initialize TRUE to prevent start running in main menu
+        public bool HasStarted = false; // can be initialized at false now that I have this starting on OverrideStart() which correctly starts up only when a save is loaded
         
         // ModData 
         private ModDataManager modData = new ModDataManager("ImprovedCougar", false);
