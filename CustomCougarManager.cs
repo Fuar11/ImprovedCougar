@@ -54,7 +54,7 @@ namespace ImprovedCougar
 
         //spawn region
 
-        public SpawnRegion spawnRegion = null;
+        public CustomCougarSpawnRegion customCougarSpawnRegion = null;
 
         //spawn region positions
         public Vector3? currentSpawnRegion = Vector3.zero;
@@ -225,7 +225,6 @@ namespace ImprovedCougar
 
             if (RegionHasCougar(scene))
             {
-
                 //grab initial territory object and move it around, gotta modify this for specific regions
                 GameObject territoryObject = GameObject.Find("CougarTerritoryZone_a_T1");
 
@@ -252,12 +251,32 @@ namespace ImprovedCougar
                 spawnRegionObject.gameObject.SetActive(true); //set spawn region object to true
                 territoryObject.transform.GetChild(1).gameObject.SetActive(true); //set audio object to true
                 territoryObject.transform.GetChild(2).gameObject.SetActive(true); //set wander region object to true, idk if this is used
-
-                spawnRegion = spawnRegionObject.GetComponent<SpawnRegion>();
-                mManager.SpawnRegionManager.Add(spawnRegion);
+                if (!spawnRegionObject.TryGetComponent(out SpawnRegion spawnRegion))
+                {
+                    Main.Logger.Log("Spawn region object does not have a SpawnRegion component!", FlaggedLoggingLevel.Error);
+                    return;
+                }
+                if (!mManager.SpawnRegionManager.Add(spawnRegion, HandleWrappedSpawnRegion))
+                {
+                    Main.Logger.Log("Failed to add spawn region to spawn region manager!", FlaggedLoggingLevel.Error);
+                }
             }
-
             toMoveSpawnRegion = false;
+        }
+
+        private void HandleWrappedSpawnRegion(CustomSpawnRegion customSpawnRegion)
+        {
+            if (customSpawnRegion is not CustomCougarSpawnRegion)
+            {
+                Main.Logger.Log("Custom spawn region is not a CustomCougarSpawnRegion!", FlaggedLoggingLevel.Error);
+                return;
+            }
+            customCougarSpawnRegion = (CustomCougarSpawnRegion)customSpawnRegion;
+            Transform player = GameManager.GetPlayerTransform();
+            customCougarSpawnRegion.SpawnCougar(player.position, player.rotation, (customCougar) =>
+            {
+                // bad kitty
+            });
         }
 
         private void SetCurrentSpawnRegionToExistingSpawnRegion(string region)
