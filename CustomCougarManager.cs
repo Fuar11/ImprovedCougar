@@ -256,16 +256,6 @@ namespace ImprovedCougar
                     Main.Logger.Log("Spawn region object does not have a SpawnRegion component!", FlaggedLoggingLevel.Error);
                     return;
                 }
-                if (!mManager.SpawnRegionManager.Add(spawnRegion))
-                {
-                    Main.Logger.Log("Failed to add spawn region to spawn region manager!", FlaggedLoggingLevel.Error);
-                    return;
-                }
-                if (!spawnRegion.TryGetComponent(out ObjectGuid objGuid))
-                {
-                    Main.Logger.Log("Spawn region object does not have an ObjectGuid component!", FlaggedLoggingLevel.Error);
-                    return;
-                }
                 if (!mManager.SpawnRegionManager.Add(spawnRegion, HandleWrappedSpawnRegion))
                 {
                     Main.Logger.Log("Failed to add spawn region to spawn region manager!", FlaggedLoggingLevel.Error);
