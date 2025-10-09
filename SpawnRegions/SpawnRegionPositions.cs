@@ -156,7 +156,7 @@ namespace ImprovedCougar.SpawnRegions
                 foreach (var pos in spawns)
                 {
 
-                    Color color = Main.CustomCougarManager.currentSpawnRegion == pos ? Color.green : orange;
+                    Color color = Main.CustomCougarManager.currentSpawnRegionPosition == pos ? Color.green : orange;
 
                     GameObject spawnRegionCylinder = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                     UnityEngine.Object.Destroy(spawnRegionCylinder.GetComponent<Collider>());

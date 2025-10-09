@@ -302,31 +302,31 @@ namespace ImprovedCougar
             switch (region)
             {
                 case "LakeRegion":
-                    currentSpawnRegion = lastSpawnRegionML;
+                    currentSpawnRegionPosition = lastSpawnRegionML;
                     break;
                 case "RuralRegion":
-                    currentSpawnRegion = lastSpawnRegionPV;
+                    currentSpawnRegionPosition = lastSpawnRegionPV;
                     break;
                 case "MountainTownRegion":
-                    currentSpawnRegion = lastSpawnRegionMT;
+                    currentSpawnRegionPosition = lastSpawnRegionMT;
                     break;
                 case "CrashMountainRegion":
-                    currentSpawnRegion = lastSpawnRegionTWM;
+                    currentSpawnRegionPosition = lastSpawnRegionTWM;
                     break;
                 case "AshCanyonRegion":
-                    currentSpawnRegion = lastSpawnRegionAC;
+                    currentSpawnRegionPosition = lastSpawnRegionAC;
                     break;
                 case "BlackrockRegion":
-                    currentSpawnRegion = lastSpawnRegionBR;
+                    currentSpawnRegionPosition = lastSpawnRegionBR;
                     break;
-                case "RiverValleyRegion": 
-                    currentSpawnRegion = lastSpawnRegionHRV;
+                case "RiverValleyRegion":
+                    currentSpawnRegionPosition = lastSpawnRegionHRV;
                     break;
                 case "AirfieldRegion":
-                    currentSpawnRegion = lastSpawnRegionFA;
+                    currentSpawnRegionPosition = lastSpawnRegionFA;
                     break;
                 case "MountainPassRegion":
-                    currentSpawnRegion = lastSpawnRegionSP;
+                    currentSpawnRegionPosition = lastSpawnRegionSP;
                     break;
                 default: break;
             }
@@ -339,31 +339,31 @@ namespace ImprovedCougar
             switch (region)
             {
                 case "LakeRegion":
-                    lastSpawnRegionML = currentSpawnRegion;
+                    lastSpawnRegionML = currentSpawnRegionPosition;
                     break;
                 case "RuralRegion":
-                     lastSpawnRegionPV = currentSpawnRegion;
+                     lastSpawnRegionPV = currentSpawnRegionPosition;
                     break;
                 case "MountainTownRegion":
-                     lastSpawnRegionMT = currentSpawnRegion;
+                     lastSpawnRegionMT = currentSpawnRegionPosition;
                     break;
                 case "CrashMountainRegion":
-                    lastSpawnRegionTWM = currentSpawnRegion;
+                    lastSpawnRegionTWM = currentSpawnRegionPosition;
                     break;
                 case "AshCanyonRegion":
-                    lastSpawnRegionAC = currentSpawnRegion;
+                    lastSpawnRegionAC = currentSpawnRegionPosition;
                     break;
                 case "BlackrockRegion":
-                    lastSpawnRegionBR = currentSpawnRegion;
+                    lastSpawnRegionBR = currentSpawnRegionPosition;
                     break;
                 case "RiverValleyRegion":
-                    lastSpawnRegionHRV = currentSpawnRegion;
+                    lastSpawnRegionHRV = currentSpawnRegionPosition;
                     break;
                 case "AirfieldRegion":
-                    lastSpawnRegionFA = currentSpawnRegion;
+                    lastSpawnRegionFA = currentSpawnRegionPosition;
                     break;
                 case "MountainPassRegion":
-                    lastSpawnRegionSP = currentSpawnRegion;
+                    lastSpawnRegionSP = currentSpawnRegionPosition;
                     break;
                 default: break;
             }

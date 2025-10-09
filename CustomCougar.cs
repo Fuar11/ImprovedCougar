@@ -433,6 +433,7 @@ namespace ImprovedCougar
 
             if (!WanderPathConnected)
             {
+                Main.Logger.Log("No wanderpath connected.", ComplexLogger.FlaggedLoggingLevel.Debug);
                 if (!TryGetSavedWanderPath(mModDataProxy))
                 {
                     mManager.DataManager.ScheduleMapDataRequest<WanderPath>(new GetNearestMapDataRequest<WanderPath>(mBaseAi.transform.position, mModDataProxy.Scene, (nearestSpot, result2) =>
@@ -752,29 +753,29 @@ namespace ImprovedCougar
                 || proxy.CustomData == null
                 || proxy.CustomData.Length == 0)
             {
-                this.LogTraceInstanced($"Null proxy, null proxy custom data or no length to proxy custom data");
+                Main.Logger.Log($"Null proxy, null proxy custom data or no length to proxy custom data", ComplexLogger.FlaggedLoggingLevel.Debug);
                 return false;
             }
             Guid spotGuid = new Guid((string)proxy.CustomData[0]);
             if (spotGuid == Guid.Empty)
             {
-                this.LogTraceInstanced($"Proxy spot guid is empty");
+                Main.Logger.Log($"Proxy spot guid is empty", ComplexLogger.FlaggedLoggingLevel.Debug);
                 return false;
             }
             mManager.DataManager.ScheduleMapDataRequest<WanderPath>(new GetDataByGuidRequest<WanderPath>(spotGuid, proxy.Scene, (spot, result) =>
             {
                 if (result != RequestResult.Succeeded)
                 {
-                    this.LogTraceInstanced($"Can't get WanderPath with guid <<<{spotGuid}>>> from dictionary, requesting nearest instead...");
+                    Main.Logger.Log($"Can't get WanderPath with guid <<<{spotGuid}>>> from dictionary, requesting nearest instead...", ComplexLogger.FlaggedLoggingLevel.Debug);
                     mManager.DataManager.ScheduleMapDataRequest<WanderPath>(new GetNearestMapDataRequest<WanderPath>(mBaseAi.transform.position, proxy.Scene, (nearestSpot, result2) =>
                     {
-                        this.LogTraceInstanced($"Found new nearest WanderPath with guid <<<{nearestSpot}>>>");
+                        Main.Logger.Log($"Found new nearest WanderPath with guid <<<{nearestSpot}>>>", ComplexLogger.FlaggedLoggingLevel.Debug);
                         AttachWanderPath(nearestSpot);
                     }, false, CheckIfWanderPathIsForCougar, 3));
                 }
                 else
                 {
-                    this.LogTraceInstanced($"Found saved WanderPath with guid <<<{spotGuid}>>>");
+                    Main.Logger.Log($"Found saved WanderPath with guid <<<{spotGuid}>>>", ComplexLogger.FlaggedLoggingLevel.Debug);
                     AttachWanderPath(spot);
                 }
             }, false));
