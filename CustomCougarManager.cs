@@ -57,13 +57,12 @@ namespace ImprovedCougar
         public CustomCougarSpawnRegion customCougarSpawnRegion = null;
 
         //spawn region positions
-        public Vector3? currentSpawnRegion = Vector3.zero;
+        public Vector3? currentSpawnRegionPosition = Vector3.zero;
 
         public Vector3? lastSpawnRegionML = null;
         public Vector3? lastSpawnRegionPV = null;
         public Vector3? lastSpawnRegionMT = null;
         public Vector3? lastSpawnRegionTWM = null;
-        public Vector3? lastSpawnRegionBRM = null;
         public Vector3? lastSpawnRegionBR = null;
         public Vector3? lastSpawnRegionAC = null;
         public Vector3? lastSpawnRegionHRV = null;
@@ -96,6 +95,22 @@ namespace ImprovedCougar
         {
             public bool CougarArrived;
             public int DaysToArrive;
+
+            public float timeToMoveSpawnRegion;
+            public float debugTimeToMoveSpawnRegionInHours;
+
+            public Vector3? lastSpawnRegionML;
+            public Vector3? lastSpawnRegionPV;
+            public Vector3? lastSpawnRegionBR;
+            public Vector3? lastSpawnRegionMT;
+            public Vector3? lastSpawnRegionTWM;
+            public Vector3? lastSpawnRegionAC;
+            public Vector3? lastSpawnRegionFA;
+            public Vector3? lastSpawnRegionSP;
+            public Vector3? lastSpawnRegionHRV;
+
+            public string latestRegion;
+
             public LoadData() {}
         }
 
@@ -180,7 +195,7 @@ namespace ImprovedCougar
                 {
                     Main.Logger.Log("Region has changed. Checking for existing spawn regions in this region.", FlaggedLoggingLevel.Debug);
                     SetCurrentSpawnRegionToExistingSpawnRegion(SceneUtilities.GetActiveSceneName());
-                    if(currentSpawnRegion == null)
+                    if(currentSpawnRegionPosition == null)
                     {
                         Main.Logger.Log("Region has changed but player has not yet been to this region. Setting a new spawn region.", FlaggedLoggingLevel.Debug);
                         SetSpawnRegion();
@@ -203,21 +218,21 @@ namespace ImprovedCougar
             latestRegion = SceneUtilities.GetActiveSceneName();
 
             //random for now
-            currentSpawnRegion = SpawnRegionPositions.GetRandomSpawnRegion(region);
-            if(currentSpawnRegion == null)
+            currentSpawnRegionPosition = SpawnRegionPositions.GetRandomSpawnRegion(region);
+            if(currentSpawnRegionPosition == null)
             {
                 Main.Logger.Log("Unable to set spawn region!", FlaggedLoggingLevel.Error);
                 return;
             }
 
-            SetPerRegionSpawnRegion((Vector3)currentSpawnRegion, region);
+            SetPerRegionSpawnRegion((Vector3)currentSpawnRegionPosition, region);
 
             int timeToAdd = random.Next(minTimeTillNextSpawnRegionMoveInHours, maxTimeTillNextSpawnRegionMoveInHours);
             timeToMoveSpawnRegion = GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() + timeToAdd;
             debugTimeToMoveSpawnRegionInHours = timeToAdd; //this is just to view the time in hours to wait until the next one in ue
             toMoveSpawnRegion = true;
             toSetNewSpawnRegion = false;
-            Main.Logger.Log($"New spawn region {currentSpawnRegion} set!", FlaggedLoggingLevel.Debug);
+            Main.Logger.Log($"New spawn region {currentSpawnRegionPosition} set!", FlaggedLoggingLevel.Debug);
         }
 
         public void UpdateCougarSpawnRegionPosition(string scene)
@@ -234,7 +249,7 @@ namespace ImprovedCougar
                     return;
                 }
 
-                if(currentSpawnRegion == null)
+                if(currentSpawnRegionPosition == null)
                 {
                     Main.Logger.Log("Unable to move spawn region!", FlaggedLoggingLevel.Error);
                     return;
@@ -242,7 +257,7 @@ namespace ImprovedCougar
 
                 Main.Logger.Log($"Old spawn region position {territoryObject.transform.position.ToString()}", FlaggedLoggingLevel.Debug);
 
-                territoryObject.transform.position = (Vector3)currentSpawnRegion;
+                territoryObject.transform.position = (Vector3)currentSpawnRegionPosition;
                 //territoryObject.transform.position = new Vector3(102.14f, 2.65f, 79.10f); //temporary testing spawn at trapper's
 
                 Main.Logger.Log($"New spawn region position {territoryObject.transform.position.ToString()}", FlaggedLoggingLevel.Debug);
@@ -298,14 +313,11 @@ namespace ImprovedCougar
                 case "CrashMountainRegion":
                     currentSpawnRegion = lastSpawnRegionTWM;
                     break;
-                case "TracksRegion":
-                    currentSpawnRegion = lastSpawnRegionBR;
-                    break;
                 case "AshCanyonRegion":
                     currentSpawnRegion = lastSpawnRegionAC;
                     break;
                 case "BlackrockRegion":
-                    currentSpawnRegion = lastSpawnRegionAC;
+                    currentSpawnRegion = lastSpawnRegionBR;
                     break;
                 case "RiverValleyRegion": 
                     currentSpawnRegion = lastSpawnRegionHRV;
@@ -338,14 +350,11 @@ namespace ImprovedCougar
                 case "CrashMountainRegion":
                     lastSpawnRegionTWM = currentSpawnRegion;
                     break;
-                case "TracksRegion":
-                    currentSpawnRegion = lastSpawnRegionBR;
-                    break;
                 case "AshCanyonRegion":
                     lastSpawnRegionAC = currentSpawnRegion;
                     break;
                 case "BlackrockRegion":
-                    lastSpawnRegionAC = currentSpawnRegion;
+                    lastSpawnRegionBR = currentSpawnRegion;
                     break;
                 case "RiverValleyRegion":
                     lastSpawnRegionHRV = currentSpawnRegion;
@@ -418,6 +427,19 @@ namespace ImprovedCougar
             LoadData loadData = new LoadData();
             loadData.CougarArrived = cougarArrived;
             loadData.DaysToArrive = daysToArrive;
+            loadData.timeToMoveSpawnRegion = timeToMoveSpawnRegion;
+            loadData.debugTimeToMoveSpawnRegionInHours = debugTimeToMoveSpawnRegionInHours;
+            loadData.lastSpawnRegionML = lastSpawnRegionML;
+            loadData.lastSpawnRegionPV = lastSpawnRegionPV;
+            loadData.lastSpawnRegionMT = lastSpawnRegionMT;
+            loadData.lastSpawnRegionHRV = lastSpawnRegionHRV;
+            loadData.lastSpawnRegionTWM = lastSpawnRegionTWM;
+            loadData.lastSpawnRegionAC = lastSpawnRegionAC;
+            loadData.lastSpawnRegionBR = lastSpawnRegionBR;
+            loadData.lastSpawnRegionFA = lastSpawnRegionFA;
+            loadData.lastSpawnRegionSP = lastSpawnRegionSP;
+            loadData.latestRegion = latestRegion;
+
             string json = JSON.Dump(loadData, EncodeOptions.PrettyPrint | EncodeOptions.NoTypeHints);
             if (json == null || json == string.Empty)
             {
@@ -445,10 +467,27 @@ namespace ImprovedCougar
                 //debug
                 loadData.CougarArrived = true;
                 //remove this after
+
             }
             
             daysToArrive = loadData.DaysToArrive;
             cougarArrived = loadData.CougarArrived;
+
+            debugTimeToMoveSpawnRegionInHours = loadData.debugTimeToMoveSpawnRegionInHours;
+            timeToMoveSpawnRegion = loadData.timeToMoveSpawnRegion;
+
+            latestRegion = loadData.latestRegion;
+
+            lastSpawnRegionML = loadData.lastSpawnRegionML;
+            lastSpawnRegionPV = loadData.lastSpawnRegionPV;
+            lastSpawnRegionMT = loadData.lastSpawnRegionMT;
+            lastSpawnRegionTWM = loadData.lastSpawnRegionTWM;
+            lastSpawnRegionHRV = loadData.lastSpawnRegionHRV;
+            lastSpawnRegionAC = loadData.lastSpawnRegionAC;
+            lastSpawnRegionBR = loadData.lastSpawnRegionBR;
+            lastSpawnRegionFA = loadData.lastSpawnRegionFA;
+            lastSpawnRegionSP = loadData.lastSpawnRegionSP;
+
         }
 
         public void OnQuitToMainMenu()
