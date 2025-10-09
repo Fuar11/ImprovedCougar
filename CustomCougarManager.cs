@@ -266,26 +266,27 @@ namespace ImprovedCougar
                     Main.Logger.Log("Spawn region object does not have an ObjectGuid component!", FlaggedLoggingLevel.Error);
                     return;
                 }
-                Guid guid = new Guid(objGuid.PDID);
-                if (!mManager.SpawnRegionManager.CustomSpawnRegionsByGuid.TryGetValue(guid, out CustomSpawnRegion customSpawnRegion))
+                if (!mManager.SpawnRegionManager.Add(spawnRegion, HandleWrappedSpawnRegion))
                 {
-                    Main.Logger.Log("Failed to get custom spawn region from spawn region manager!", FlaggedLoggingLevel.Error);
-                    return;
+                    Main.Logger.Log("Failed to add spawn region to spawn region manager!", FlaggedLoggingLevel.Error);
                 }
-                if (customSpawnRegion is not CustomCougarSpawnRegion)
-                {
-                    Main.Logger.Log("Custom spawn region is not a CustomCougarSpawnRegion!", FlaggedLoggingLevel.Error);
-                    return;
-                }
-                customCougarSpawnRegion = (CustomCougarSpawnRegion)customSpawnRegion;
-                Transform player = GameManager.GetPlayerTransform();
-                customCougarSpawnRegion.SpawnCougar(player.position, player.rotation, (customCougar) =>
-                {
-                    // bad kitty
-                });
             }
-
             toMoveSpawnRegion = false;
+        }
+
+        private void HandleWrappedSpawnRegion(CustomSpawnRegion customSpawnRegion)
+        {
+            if (customSpawnRegion is not CustomCougarSpawnRegion)
+            {
+                Main.Logger.Log("Custom spawn region is not a CustomCougarSpawnRegion!", FlaggedLoggingLevel.Error);
+                return;
+            }
+            customCougarSpawnRegion = (CustomCougarSpawnRegion)customSpawnRegion;
+            Transform player = GameManager.GetPlayerTransform();
+            customCougarSpawnRegion.SpawnCougar(player.position, player.rotation, (customCougar) =>
+            {
+                // bad kitty
+            });
         }
 
         private void SetCurrentSpawnRegionToExistingSpawnRegion(string region)
