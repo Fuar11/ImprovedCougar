@@ -39,6 +39,7 @@ namespace ImprovedCougar.SpawnRegions
 
         private CustomCougar MaybeSpawnCougar(SpawnModDataProxy proxy, Vector3 position, Quaternion rotation)
         {
+            proxy.ForceSpawn = true;
             proxy.CurrentPosition = position;
             proxy.CurrentRotation = rotation;
             CustomBaseAi maybeCustomCougar = InstantiateSpawn(proxy);
