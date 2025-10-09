@@ -278,6 +278,11 @@ namespace ImprovedCougar
                     return;
                 }
                 customCougarSpawnRegion = (CustomCougarSpawnRegion)customSpawnRegion;
+                Transform player = GameManager.GetPlayerTransform();
+                customCougarSpawnRegion.SpawnCougar(player.position, player.rotation, (customCougar) =>
+                {
+                    // bad kitty
+                });
             }
 
             toMoveSpawnRegion = false;
