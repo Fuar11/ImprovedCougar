@@ -26,15 +26,12 @@ namespace ImprovedCougar.Patches
             }
         }
 
-        // This should still work, but plan for it to appear in EAF instead eventually :)
-        [HarmonyPatch(nameof(CougarManager), nameof(CougarManager.MaybeSetThreatLevel))]
-
+        [HarmonyLib.HarmonyPatch(typeof(CougarManager), "MaybeIncreaseThreatLevel")]
         public class DisableOtherTerritory
         {
-
-            public static void Prefix(CougarManager __instance, ref int level)
+            public static bool Prefix(CougarManager __instance)
             {
-                level = 1;
+                return false;
             }
 
         }

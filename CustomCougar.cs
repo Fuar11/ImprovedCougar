@@ -141,8 +141,9 @@ namespace ImprovedCougar
                 default:
                     return base.PreProcessCustom();
             }
-
         }
+
+        
 
         protected void ProcessStalkingAdvanced()
         {
@@ -265,7 +266,7 @@ namespace ImprovedCougar
                 {
                     Main.Logger.Log("Attacking!", ComplexLogger.FlaggedLoggingLevel.Debug);
                     mBaseAi.SetAiMode(DetermineAttackType());
-                }
+                }   
                 //else maybe do a fake charge?
             }
         }
@@ -436,10 +437,11 @@ namespace ImprovedCougar
                 Main.Logger.Log("No wanderpath connected.", ComplexLogger.FlaggedLoggingLevel.Debug);
                 if (!TryGetSavedWanderPath(mModDataProxy))
                 {
+                    Main.Logger.Log("No wanderpath saved.", ComplexLogger.FlaggedLoggingLevel.Debug);
                     mManager.DataManager.ScheduleMapDataRequest<WanderPath>(new GetNearestMapDataRequest<WanderPath>(mBaseAi.transform.position, mModDataProxy.Scene, (nearestSpot, result2) =>
                     {
                        AttachWanderPath(nearestSpot);
-                    }, false, CheckIfWanderPathIsForCougar, 3));            
+                    }, false, CheckIfWanderPathIsForCougar, 0));            
                 }
             }
 
@@ -455,7 +457,8 @@ namespace ImprovedCougar
             currentSpeed = wanderSpeed; //for consistency, i know this is useless
             mBaseAi.m_AiGoalSpeed = wanderSpeed;
             mBaseAi.SetAiMode(AiMode.FollowWaypoints);
-            Main.Logger.Log($"Following path {wanderPath.Guid.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+            string pathType = (CougarPath)wanderPath.WanderPathType == CougarPath.Cougar ? "cougar" : "non-cougar";
+            Main.Logger.Log($"Following {pathType} path {wanderPath.Guid.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
             toStartFollowWanderPathMode = false;
 
@@ -711,7 +714,6 @@ namespace ImprovedCougar
             Main.Logger.Log($"Teleporting cougar to position {pos.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
         }
-
         private void ToggleInvisibility()
         {
 
