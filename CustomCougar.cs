@@ -258,10 +258,20 @@ namespace ImprovedCougar
             }
             else
             {
-                if(!IsPlayerFacingCougar(player, cougar))
+
+                AiMode attackType = DetermineAttackType();
+
+                if (!IsPlayerFacingCougar(player, cougar))
                 {
+
+                    if(attackType == AiMode.PassingAttack)
+                    {
+                        Main.Logger.Log("Passing attack!", ComplexLogger.FlaggedLoggingLevel.Debug);
+                        mBaseAi.Cougar.SetWillDoPassingAttack();
+                    }
+
                     Main.Logger.Log("Attacking!", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    mBaseAi.SetAiMode(DetermineAttackType());
+                    mBaseAi.SetAiMode(AiMode.Attack);
                 }   
                 //else maybe do a fake charge?
             }
@@ -298,7 +308,7 @@ namespace ImprovedCougar
             if (currentDistance <= attackDistance)
             {
                 //charge the player
-                SetAiMode(DetermineAttackType());
+                SetAiMode(AiMode.Attack);
             }
 
             timeSinceFreezing += Time.deltaTime;
@@ -341,7 +351,7 @@ namespace ImprovedCougar
             if (currentDistance <= attackDistance)
             {
                 //charge the player
-                SetAiMode(DetermineAttackType());
+                SetAiMode(AiMode.Attack);
             }
 
             if (Vector3.Distance(cougar.position, retreatPosition) < reachThreshold)
