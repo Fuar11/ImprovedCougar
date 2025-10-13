@@ -12,6 +12,7 @@ using ImprovedCougar.Pathfinding;
 using Color = UnityEngine.Color;
 using static Il2Cpp.CarcassSite;
 using static UnityEngine.GraphicsBuffer;
+using static Il2CppTLD.AI.CougarManager;
 
 namespace ImprovedCougar
 {
@@ -41,6 +42,8 @@ namespace ImprovedCougar
         protected bool toStartFollowWanderPathMode = true;
         protected override float m_MinWaypointDistance { get { return 100.0f; } }
         protected override float m_MaxWaypointDistance { get { return 1000.0f; } }
+
+        private Vector3 lastWaypointPosition;
 
         //speeds
         private float currentSpeed = 0f;
@@ -178,7 +181,7 @@ namespace ImprovedCougar
                     {
                         timeToFreezeFor = 5f;
                     }
-                    else if (currentDistance <= 70f && currentDistance >= 30)
+                    else if (currentDistance <= 70f && currentDistance >= 35)
                     {
                         timeToFreezeFor = 3f;
                     }
@@ -248,16 +251,9 @@ namespace ImprovedCougar
                     //if no path found it probably means there is no cover nearby, so it isn't stealthy enough to keep stalking. If close enough keep going 
 
                     //i can probably change this to detect for allowed areas or something
-                    Main.Logger.Log("Cougar is in open area!", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    Main.Logger.Log("Cougar is in open area! Continuing directly to player.", ComplexLogger.FlaggedLoggingLevel.Debug);
 
-                    if (currentDistance <= 35)
-                    {
-                        mBaseAi.StartPath(playerPosition, currentSpeed);
-                    }
-                    else
-                    {
-                        mBaseAi.SetAiMode((AiMode)CustomCougarAiMode.Retreat);
-                    } 
+                    mBaseAi.StartPath(playerPosition, currentSpeed);                   
                 }
             }
             else
@@ -312,17 +308,17 @@ namespace ImprovedCougar
                 //add more complex behavior decision making here
                 if (IsPlayerFacingCougar(player, cougar))
                 {
-                    Main.Logger.Log("Cougar is freezing for too long and player is looking. Gonna flee...", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    Main.Logger.Log("Cougar is freezing for too long and player is looking. Gonna retreat to cover...", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                     //change state here  
                     currentSpeed = spottedRetreatSpeed;
-                    retreatPosition = lastPosition != Vector3.zero ? lastPosition : (Vector3)FindRetreatCoverPoint(cougar, player, 50f, Utils.m_PhysicalCollisionLayerMask);
+                    retreatPosition = lastPosition != Vector3.zero ? lastPosition : (Vector3)FindRetreatCoverPoint(cougar, player, 65f, Utils.m_PhysicalCollisionLayerMask);
                     SetAiMode((AiMode)CustomCougarAiMode.Retreat);
                 }
                 else
                 {
                     Main.Logger.Log("Cougar is freezing for too long and player is not looking. Teleporting cougar to retreat point and hiding...", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    retreatPosition = lastPosition != Vector3.zero ? lastPosition : (Vector3)FindRetreatCoverPoint(cougar, player, 50f, Utils.m_PhysicalCollisionLayerMask);
+                    retreatPosition = lastPosition != Vector3.zero ? lastPosition : (Vector3)FindRetreatCoverPoint(cougar, player, 65f, Utils.m_PhysicalCollisionLayerMask);
                     TeleportCougarToPosition(retreatPosition, cougar);
                     SetAiMode((AiMode)CustomCougarAiMode.Hide);
                 }
@@ -334,24 +330,26 @@ namespace ImprovedCougar
             Transform player = GameManager.GetPlayerTransform();
             Transform cougar = mBaseAi.transform;
             float currentDistance = Vector3.Distance(cougar.position, player.position);
-            float pointDistance = Vector3.Distance(cougar.position, spawnPosition);
-
-            //if still in territory fall back not too far and go into observe state or keep stalking
-            //else fall back all the way into territory and go into observe state
 
             if (retreatPosition == Vector3.zero)
             {
-                retreatPosition = spawnPosition;
-                Main.Logger.Log("Retreat position is invalid. Falling back to spawn location.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                retreatPosition = lastWaypointPosition;
+                Main.Logger.Log("Retreat position is invalid. Falling back to last patrol point.", ComplexLogger.FlaggedLoggingLevel.Debug);
             }
             mBaseAi.StartPath(retreatPosition, currentSpeed);
 
+            if (currentDistance <= attackDistance)
+            {
+                //charge the player
+                SetAiMode(DetermineAttackType());
+            }
+
             if (Vector3.Distance(cougar.position, retreatPosition) < reachThreshold)
             {
-                if (retreatPosition == spawnPosition)
+                if (retreatPosition == lastWaypointPosition)
                 {
-                    Main.Logger.Log("Cougar has reached it's territory, going back to wandering", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    mBaseAi.SetAiMode(AiMode.FollowWaypoints); 
+                    Main.Logger.Log("Cougar has reached it's last patrol point, going back to wandering", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    StartFollowWanderPath();
                 }
                 else
                 {
@@ -402,6 +400,12 @@ namespace ImprovedCougar
         {
             Main.Logger.Log("Leaving cover", ComplexLogger.FlaggedLoggingLevel.Debug);
             ToggleInvisibility();
+        }
+
+        protected void StopFollowWaypoints()
+        {
+            Main.Logger.Log("Leaving wander path", ComplexLogger.FlaggedLoggingLevel.Debug);
+            lastWaypointPosition = mBaseAi.transform.position;
         }
 
         protected void BeginFreezing()
@@ -476,7 +480,6 @@ namespace ImprovedCougar
 
         protected void PreProcessingFollowPath()
         {
-
 
             //this is where you can change out of state, since the main AiMode isn't being overridden
             //also do other stuff
