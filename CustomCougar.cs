@@ -176,13 +176,13 @@ namespace ImprovedCougar
                 {
                     if (currentDistance >= 70f)
                     {
-                        timeToFreezeFor = 15f;
+                        timeToFreezeFor = 5f;
                     }
                     else if (currentDistance <= 70f && currentDistance >= 30)
                     {
-                        timeToFreezeFor = 7f;
+                        timeToFreezeFor = 3f;
                     }
-                    else timeToFreezeFor = 5f;
+                    else timeToFreezeFor = 1f;
 
                     Main.Logger.Log($"Cougar can see player looking, freezing for {timeToFreezeFor} seconds and assessing.", ComplexLogger.FlaggedLoggingLevel.Debug);
                     toHide = true;
