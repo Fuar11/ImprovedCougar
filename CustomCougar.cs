@@ -479,6 +479,16 @@ namespace ImprovedCougar
 
 
             //this is where you can change out of state, since the main AiMode isn't being overridden
+            //also do other stuff
+
+            Vector3 waypoint = mBaseAi.m_Waypoints[mBaseAi.m_TargetWaypointIndex];
+
+            if (!mBaseAi.CanPathfindToPosition(waypoint))
+            {
+                Main.Logger.Log($"Cannot pathfind to next waypoint at {waypoint.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                TeleportCougarToPosition(waypoint, mBaseAi.transform);
+            } 
+
 
         }
 
