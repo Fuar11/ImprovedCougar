@@ -436,6 +436,11 @@ namespace ImprovedCougar
             Main.Logger.Log("Cougar is retreating!", ComplexLogger.FlaggedLoggingLevel.Debug);
         }
 
+        protected void BeginAttacking()
+        {
+            currentSpeed = attackSpeed;
+        }
+
         protected void DoStartFollowWanderPathFirstFrame()
         {
             if (toStartFollowWanderPathMode) StartFollowWanderPath();
@@ -859,6 +864,9 @@ namespace ImprovedCougar
                     return false;
                 case (AiMode)CustomCougarAiMode.Retreat:
                     BeginRetreating();
+                    return false;
+                case AiMode.Attack:
+                    BeginAttacking();
                     return false;
                 default:
                     return true;
