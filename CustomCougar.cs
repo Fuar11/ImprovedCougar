@@ -376,10 +376,6 @@ namespace ImprovedCougar
             Transform player = GameManager.GetPlayerTransform();
             Transform cougar = mBaseAi.transform;
 
-            mBaseAi.m_StalkingAudioID = 0; //probably stops the initial growl
-            mBaseAi.m_StalkingAudio = "";
-            mBaseAi.m_EnterStalkingAudio = "";
-
             mBaseAi.MoveAgentStop();
             mBaseAi.m_CurrentTarget = GameManager.GetPlayerManagerComponent().m_AiTarget;
             currentSpeed = baseStalkSpeed;
@@ -767,12 +763,6 @@ namespace ImprovedCougar
             }
 
         }
-
-        private void DoSomethingWithAudio()
-        {
-            
-        }
-
 
         //wander path stuff
 

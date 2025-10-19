@@ -39,7 +39,13 @@
 			<HintPath>$(TheLongDarkPath)\Mods\ModData.dll</HintPath>
 		</Reference>
 	</ItemGroup>
-	
+
+	<ItemGroup>
+		<Reference Include="AudioManager">
+			<HintPath>$(TheLongDarkPath)\Mods\AudioManager.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
 	<ItemGroup>
 		<Using Include="System.Reflection" />
 		<Using Include="System.Diagnostics.CodeAnalysis" />

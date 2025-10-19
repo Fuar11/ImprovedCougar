@@ -6,6 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using ImprovedCougar.Settings;
 using UnityEngine.AI;
+using ExpandedAiFramework;
+using CougarManager = Il2CppTLD.AI.CougarManager;
+using UnityEngine;
 
 namespace ImprovedCougar.Patches
 {
@@ -33,7 +36,18 @@ namespace ImprovedCougar.Patches
             {
                 return false;
             }
-
         }
+
+
+        [HarmonyPatch(typeof(GameAudioManager), "PlaySoundWithPositionTracking", new Type[] { typeof(Il2CppAK.Wwise.Event), typeof(GameObject), typeof(AkCallbackManager.EventCallback), typeof(GameAudioManager.PlayOptions) })]
+
+        public class TestCougarAudio
+        {
+            public static bool Prefix(ref Il2CppAK.Wwise.Event soundEvent, ref GameObject go)
+            {                
+                    return soundEvent.Name == "play_Cougar_prefabWildlifeCougar_Spawn" ? false : true;
+            }
+        }
+
     }
 }
