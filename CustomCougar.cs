@@ -376,6 +376,7 @@ namespace ImprovedCougar
             Transform player = GameManager.GetPlayerTransform();
             Transform cougar = mBaseAi.transform;
 
+            mBaseAi.m_DefaultMode = AiMode.Wander;
             mBaseAi.MoveAgentStop();
             mBaseAi.m_CurrentTarget = GameManager.GetPlayerManagerComponent().m_AiTarget;
             currentSpeed = baseStalkSpeed;
@@ -408,6 +409,8 @@ namespace ImprovedCougar
             ToggleInvisibility();
         }
 
+       
+
         protected void StopFollowWaypoints()
         {
             Main.Logger.Log("Leaving wander path", ComplexLogger.FlaggedLoggingLevel.Debug);
@@ -435,6 +438,7 @@ namespace ImprovedCougar
         protected void BeginAttacking()
         {
             currentSpeed = attackSpeed;
+            mBaseAi.m_DefaultMode = AiMode.Stalking; //this is so after cougar flees from attack, he goes back to stalking
         }
 
         protected void DoStartFollowWanderPathFirstFrame()
@@ -857,7 +861,7 @@ namespace ImprovedCougar
                     return false;
                 case AiMode.Attack:
                     BeginAttacking();
-                    return false;
+                    return false;                    
                 default:
                     return true;
             }
