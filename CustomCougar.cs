@@ -721,7 +721,10 @@ namespace ImprovedCougar
 
             if (mBaseAi.GetAiMode() == AiMode.Attack || mBaseAi.GetAiMode() == AiMode.Struggle || mBaseAi.GetAiMode() == (AiMode)CustomCougarAiMode.Hide) return;
 
-            if (Main.CustomCougarManager.gunFired)
+            float currentDistance = Vector3.Distance(mBaseAi.transform.position, GameManager.GetPlayerTransform().position);
+
+
+            if (Main.CustomCougarManager.gunFired && currentDistance <= 200) //this is a random value, I think it's close enough for it to take effect
             {
                 Main.Logger.Log("Player has shot gun.", ComplexLogger.FlaggedLoggingLevel.Debug);
                 if (IsPlayerFacingCougar(GameManager.GetPlayerTransform(), mBaseAi.transform))
