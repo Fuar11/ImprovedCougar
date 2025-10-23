@@ -79,6 +79,7 @@ namespace ImprovedCougar
         public bool cougarArrived = true;
         public bool toMoveSpawnRegion = false;
         public bool toSetNewSpawnRegion = false;
+        public bool gunFired = false;
 
         //time
         public float timeToMoveSpawnRegion = 0;

@@ -41,7 +41,7 @@ namespace ImprovedCougar.Patches
 
         [HarmonyPatch(typeof(GameAudioManager), "PlaySoundWithPositionTracking", new Type[] { typeof(Il2CppAK.Wwise.Event), typeof(GameObject), typeof(AkCallbackManager.EventCallback), typeof(GameAudioManager.PlayOptions) })]
 
-        public class TestCougarAudio
+        public class RemoveCougarAudio
         {
             public static bool Prefix(ref Il2CppAK.Wwise.Event soundEvent, ref GameObject go)
             {                

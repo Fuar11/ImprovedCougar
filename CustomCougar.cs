@@ -92,6 +92,8 @@ namespace ImprovedCougar
             base.Initialize(ai, timeOfDay, spawnRegion, proxy);
             mBaseAi.m_DefaultMode = AiMode.Wander;
             mBaseAi.m_StartMode = AiMode.Wander;
+            mBaseAi.m_AttackChanceAfterNearMissGunshot = 10;
+            mBaseAi.m_AttackChanceAfterNearMissRevolverShot = 5;
             //mBaseAi.m_DetectionRange *= 2 //this is temporary
             wanderSpeed = mBaseAi.m_WalkSpeed + 1f;
             baseStalkSpeed = mBaseAi.m_StalkSpeed + 2;
@@ -113,6 +115,7 @@ namespace ImprovedCougar
             //Main.Logger.Log("Processing custom cougar logic", ComplexLogger.FlaggedLoggingLevel.Debug);
 
             DoStartFollowWanderPathFirstFrame();
+            MaybeReactToGunshot();
             DoOnUpdate();
 
             switch (CurrentMode)
@@ -713,6 +716,23 @@ namespace ImprovedCougar
             return playerStrength;
         }
 
+        private void MaybeReactToGunshot()
+        {
+
+            if (mBaseAi.GetAiMode() == AiMode.Attack || mBaseAi.GetAiMode() == AiMode.Struggle || mBaseAi.GetAiMode() == (AiMode)CustomCougarAiMode.Hide) return;
+
+            if (Main.CustomCougarManager.gunFired)
+            {
+                Main.Logger.Log("Player has shot gun.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                if (IsPlayerFacingCougar(GameManager.GetPlayerTransform(), mBaseAi.transform))
+                {
+                    Main.Logger.Log("Player is facing cougar and shot gun. Cougar is scared shitless.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    mBaseAi.SetAiMode(AiMode.Flee);
+                    Main.CustomCougarManager.gunFired = false;
+                }
+            }
+        }
+
         //misc
         float GetCougarHeight(Transform cougar)
         {
@@ -769,7 +789,6 @@ namespace ImprovedCougar
         }
 
         //wander path stuff
-
         private bool TryGetSavedWanderPath(SpawnModDataProxy proxy)
         {
             mFetchingWanderPath = true;
