@@ -4,6 +4,7 @@ using ExpandedAiFramework;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine;
 using ImprovedCougar.SpawnRegions;
+using AudioMgr;
 
 namespace ImprovedCougar
 {
@@ -11,6 +12,7 @@ namespace ImprovedCougar
     {
         internal static ComplexLogger<Main> Logger = new();
         internal static CustomCougarManager CustomCougarManager;
+        internal static ClipManager cougarAudioManager;
 
         public override void OnInitializeMelon()
         {
@@ -58,6 +60,13 @@ namespace ImprovedCougar
                 CustomCougarManager ??= ccm.AddComponent<CustomCougarManager>();
                 EAFManager.Instance.HotSwapSubManager(EAFManager.HotSwappableSubManagers.CougarManager, CustomCougarManager);
             }
+
+            if (sceneName.ToLowerInvariant().Contains("menu"))
+            {
+                cougarAudioManager = AudioMaster.NewClipManager();
+                cougarAudioManager.LoadClipsFromDir("ImprovedCougar/Audio", ClipManager.LoadType.Compressed);
+            }
+
         }
     }
 }

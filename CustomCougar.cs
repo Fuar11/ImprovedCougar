@@ -13,6 +13,8 @@ using Color = UnityEngine.Color;
 using static Il2Cpp.CarcassSite;
 using static UnityEngine.GraphicsBuffer;
 using static Il2CppTLD.AI.CougarManager;
+using AudioMgr;
+using static Il2Cpp.ak.wwise.core;
 
 namespace ImprovedCougar
 {
@@ -87,6 +89,9 @@ namespace ImprovedCougar
         float timeSinceFreezing = 0f;
         float timeToFreezeFor = 8f;
 
+        //audio
+        Shot audio;
+
         public override void Initialize(BaseAi ai, TimeOfDay timeOfDay, SpawnRegion spawnRegion, SpawnModDataProxy proxy)
         {
             base.Initialize(ai, timeOfDay, spawnRegion, proxy);
@@ -105,6 +110,30 @@ namespace ImprovedCougar
 
             mBaseAi.m_WaypointCompletionBehaviour = BaseAi.WaypointCompletionBehaviouir.Restart;
             mBaseAi.m_TargetWaypointIndex = 0;
+
+            //audio
+
+            //audio = AudioMaster.CreateShot(mBaseAi.gameObject, SettingMaster.NewSetting(AudioMaster.SourceType.SFX, 180f, 1f, 50f, 200f, 0f, 1f, 1f, 0f, true, AudioRolloffMode.Linear, null, 0));
+            audio = AudioMaster.CreateShot(mBaseAi.gameObject, AudioMaster.SourceType.SFX);
+
+            //apply audio settings here
+
+            audio.SetVolume(100f);
+            audio._audioSource.minDistance = 20f;
+            audio._audioSource.maxDistance = 1500f;
+            audio._audioSource.rolloffMode = AudioRolloffMode.Custom;
+
+            AnimationCurve curve = new AnimationCurve(
+                new Keyframe(0f, 1f),
+                new Keyframe(0.1f, 0.9f),
+                new Keyframe(0.3f, 0.7f),
+                new Keyframe(0.6f, 0.45f),
+                new Keyframe(0.9f, 0.25f),
+                new Keyframe(1.0f, 0.15f),
+                new Keyframe(1.5f, 0f)   // ← extra fade-out tail beyond real distance
+            );
+
+            audio._audioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, curve);
 
             Main.Logger.Log($"Cougar initialized at position {mBaseAi.gameObject.transform.position.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
         }
@@ -863,6 +892,34 @@ namespace ImprovedCougar
             return closestPoint;
         }
 
+        //audio
+
+        private void MaybePlayCougarAudio()
+        {
+
+            Transform player = GameManager.GetPlayerTransform();
+            Transform cougar = mBaseAi.transform;
+            float currentDistance = Vector3.Distance(cougar.position, player.position);
+
+            if (mBaseAi.GetAiMode() == AiMode.Wander || mBaseAi.GetAiMode() == AiMode.FollowWaypoints)
+            {
+                if(currentDistance >= 150f) //temporary testing value
+                {
+
+
+
+                }
+            }
+
+        }
+
+        private void PlayCougarAudio()
+        {
+            Clip clip = Main.cougarAudioManager.GetClip("CougarScreech1");
+            audio.AssignClip(clip);
+            audio.Play();
+        }
+
         //overrides
 
         protected override bool EnterAiModeCustom(AiMode mode)
@@ -954,6 +1011,12 @@ namespace ImprovedCougar
             {
                 Main.Logger.Log("Activating wander path mode!", ComplexLogger.FlaggedLoggingLevel.Debug);
                 StartFollowWanderPath();
+            }
+
+            if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.LeftArrow))
+            {
+                Main.Logger.Log("Playing cougar audio clip", ComplexLogger.FlaggedLoggingLevel.Debug);
+                PlayCougarAudio();
             }
 
         }
