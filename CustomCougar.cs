@@ -15,6 +15,8 @@ using static UnityEngine.GraphicsBuffer;
 using static Il2CppTLD.AI.CougarManager;
 using AudioMgr;
 using static Il2Cpp.ak.wwise.core;
+using Random = System.Random;
+using Il2CppSystem.Data;
 
 namespace ImprovedCougar
 {
@@ -89,8 +91,12 @@ namespace ImprovedCougar
         float timeSinceFreezing = 0f;
         float timeToFreezeFor = 8f;
 
+        float timeForNextAudio = 0f;
+
         //audio
         Shot audio;
+        int minHoursBetweenAudio = 1;
+        int maxHoursBetweenAudio = 5;
 
         public override void Initialize(BaseAi ai, TimeOfDay timeOfDay, SpawnRegion spawnRegion, SpawnModDataProxy proxy)
         {
@@ -113,7 +119,6 @@ namespace ImprovedCougar
 
             //audio
 
-            //audio = AudioMaster.CreateShot(mBaseAi.gameObject, SettingMaster.NewSetting(AudioMaster.SourceType.SFX, 180f, 1f, 50f, 200f, 0f, 1f, 1f, 0f, true, AudioRolloffMode.Linear, null, 0));
             audio = AudioMaster.CreateShot(mBaseAi.gameObject, AudioMaster.SourceType.SFX);
 
             //apply audio settings here
@@ -130,10 +135,12 @@ namespace ImprovedCougar
                 new Keyframe(0.6f, 0.45f),
                 new Keyframe(0.9f, 0.25f),
                 new Keyframe(1.0f, 0.15f),
-                new Keyframe(1.5f, 0f)   // ← extra fade-out tail beyond real distance
+                new Keyframe(1.5f, 0f) 
             );
 
             audio._audioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, curve);
+
+            timeForNextAudio = GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() + 0.1f; //this probably means audio will play 1 hour after going outside 
 
             Main.Logger.Log($"Cougar initialized at position {mBaseAi.gameObject.transform.position.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
         }
@@ -145,6 +152,7 @@ namespace ImprovedCougar
 
             DoStartFollowWanderPathFirstFrame();
             MaybeReactToGunshot();
+            MaybePlayCougarAudio();
             DoOnUpdate();
 
             switch (CurrentMode)
@@ -899,23 +907,30 @@ namespace ImprovedCougar
 
             Transform player = GameManager.GetPlayerTransform();
             Transform cougar = mBaseAi.transform;
+            Random rand = new Random();
+
             float currentDistance = Vector3.Distance(cougar.position, player.position);
 
-            if (mBaseAi.GetAiMode() == AiMode.Wander || mBaseAi.GetAiMode() == AiMode.FollowWaypoints)
+            if(GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() >= timeForNextAudio)
             {
-                if(currentDistance >= 150f) //temporary testing value
+                if (mBaseAi.GetAiMode() == AiMode.Wander || mBaseAi.GetAiMode() == AiMode.FollowWaypoints)
                 {
+                    if (currentDistance >= 250f) //temporary testing value
+                    {
 
+                        int i = rand.Next(0, 2);
+                        PlayCougarAudio(i);
 
-
+                    }
                 }
+                timeForNextAudio = GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() + rand.Next(minHoursBetweenAudio, maxHoursBetweenAudio);
             }
 
         }
 
-        private void PlayCougarAudio()
+        private void PlayCougarAudio(int index)
         {
-            Clip clip = Main.cougarAudioManager.GetClip("CougarScreech1");
+            Clip clip = Main.cougarAudioManager.GetClipAtIndex(index);
             audio.AssignClip(clip);
             audio.Play();
         }
@@ -1016,7 +1031,7 @@ namespace ImprovedCougar
             if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.LeftArrow))
             {
                 Main.Logger.Log("Playing cougar audio clip", ComplexLogger.FlaggedLoggingLevel.Debug);
-                PlayCougarAudio();
+                PlayCougarAudio(0);
             }
 
         }
