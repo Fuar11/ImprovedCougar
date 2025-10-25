@@ -17,6 +17,7 @@ using AudioMgr;
 using static Il2Cpp.ak.wwise.core;
 using Random = System.Random;
 using Il2CppSystem.Data;
+using Il2CppInterop.Runtime;
 
 namespace ImprovedCougar
 {
@@ -97,7 +98,6 @@ namespace ImprovedCougar
         Shot audio;
         int minHoursBetweenAudio = 1;
         int maxHoursBetweenAudio = 5;
-
         public override void Initialize(BaseAi ai, TimeOfDay timeOfDay, SpawnRegion spawnRegion, SpawnModDataProxy proxy)
         {
             base.Initialize(ai, timeOfDay, spawnRegion, proxy);
@@ -119,28 +119,7 @@ namespace ImprovedCougar
 
             //audio
 
-            audio = AudioMaster.CreateShot(mBaseAi.gameObject, AudioMaster.SourceType.SFX);
-
-            //apply audio settings here
-
-            audio.SetVolume(100f);
-            audio._audioSource.minDistance = 20f;
-            audio._audioSource.maxDistance = 1500f;
-            audio._audioSource.rolloffMode = AudioRolloffMode.Custom;
-
-            AnimationCurve curve = new AnimationCurve(
-                new Keyframe(0f, 1f),
-                new Keyframe(0.1f, 0.9f),
-                new Keyframe(0.3f, 0.7f),
-                new Keyframe(0.6f, 0.45f),
-                new Keyframe(0.9f, 0.25f),
-                new Keyframe(1.0f, 0.15f),
-                new Keyframe(1.5f, 0f) 
-            );
-
-            audio._audioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, curve);
-
-            timeForNextAudio = GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() + 0.1f; //this probably means audio will play 1 hour after going outside 
+           SetupAudioSettings();
 
             Main.Logger.Log($"Cougar initialized at position {mBaseAi.gameObject.transform.position.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
         }
@@ -902,6 +881,34 @@ namespace ImprovedCougar
 
         //audio
 
+        private void SetupAudioSettings()
+        {
+
+            audio = AudioMaster.CreateShot(mBaseAi.gameObject, AudioMaster.SourceType.SFX);
+
+            audio.SetVolume(100f);
+            audio._audioSource.minDistance = 20f;
+            audio._audioSource.maxDistance = 1500f;
+            audio._audioSource.rolloffMode = AudioRolloffMode.Custom;
+
+            AnimationCurve curve = new AnimationCurve(
+                new Keyframe(0f, 1f),
+                new Keyframe(0.1f, 0.9f),
+                new Keyframe(0.3f, 0.7f),
+                new Keyframe(0.6f, 0.45f),
+                new Keyframe(0.9f, 0.25f),
+                new Keyframe(1.0f, 0.15f),
+                new Keyframe(1.5f, 0f)
+            );
+
+            audio._audioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, curve);
+
+            timeForNextAudio = GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() + 0.1f; //this probably means audio will play 1 hour after going outside 
+
+        }
+
+       
+
         private void MaybePlayCougarAudio()
         {
 
@@ -934,6 +941,7 @@ namespace ImprovedCougar
             audio.AssignClip(clip);
             audio.Play();
         }
+
 
         //overrides
 
@@ -1033,7 +1041,6 @@ namespace ImprovedCougar
                 Main.Logger.Log("Playing cougar audio clip", ComplexLogger.FlaggedLoggingLevel.Debug);
                 PlayCougarAudio(0);
             }
-
         }
 
     }
