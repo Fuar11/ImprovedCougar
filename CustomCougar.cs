@@ -18,6 +18,7 @@ using static Il2Cpp.ak.wwise.core;
 using Random = System.Random;
 using Il2CppSystem.Data;
 using Il2CppInterop.Runtime;
+using ImprovedCougar.SpawnRegions;
 
 namespace ImprovedCougar
 {

@@ -14,6 +14,7 @@ using UnityEngine.SceneManagement;
 using ModData;
 using MelonLoader.TinyJSON; 
 using static Il2Cpp.CarcassSite;
+using Il2CppEasyRoads3Dv3;
 
 namespace ImprovedCougar
 {
@@ -91,6 +92,9 @@ namespace ImprovedCougar
         public int maxTimeTillCougarArrivalInDays = 2; //Settings.CustomSettings.settings.maxTimeToArrive; 
         public int minTimeTillCougarArrivalInDays = 1; //Settings.CustomSettings.settings.minTimeToArrive;
 
+        //carcass prefab
+        public GameObject carcassPrefab;
+
         [Serializable]
         private class LoadData 
         {
@@ -139,6 +143,15 @@ namespace ImprovedCougar
             mVanillaManager.m_Cougar_TerritoryZone_ExitID = 0;
             mVanillaManager.m_Cougar_NearbyOutsideID = 0;
             VanillaCougarManager.SetAudioState(mVanillaManager.m_CougarTerritory_ZoneThreatLevel_ctztl_0);
+
+            foreach (GameObject go in Resources.FindObjectsOfTypeAll<GameObject>())
+            {
+                if (go.name.Equals("CarcassSite_DoeEaten"))
+                {
+                    carcassPrefab = go;
+                    Main.Logger.Log($"Found carcass prefab: {carcassPrefab.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                }
+            }
         }
 
         private bool ShouldAbortStart()

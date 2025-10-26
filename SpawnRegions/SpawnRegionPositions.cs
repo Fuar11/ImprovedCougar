@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Il2CppTLD.AI;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using Color = UnityEngine.Color;
 using Random = System.Random;
 
@@ -179,5 +181,25 @@ namespace ImprovedCougar.SpawnRegions
 
         }
 
+        public static void SpawnRavagedCarcassAtPosition(Vector3 pos)
+        {
+
+            GameObject prefab = Main.CustomCougarManager.carcassPrefab;
+
+            if (prefab != null)
+            {
+                CarcassSite carcass = prefab.GetComponent<CarcassSite>();
+                if (carcass == null)
+                {
+                    Main.Logger.Log("Could not find carcass component on prefab!", ComplexLogger.FlaggedLoggingLevel.Error);
+                    return;
+                }
+                CarcassSite newCarcass = GameObject.Instantiate(carcass, pos, GameManager.GetPlayerTransform().rotation);
+            }
+            else
+            {
+                Main.Logger.Log("Could not find carcass prefab!", ComplexLogger.FlaggedLoggingLevel.Error);
+            }
+        }
     }
 }
