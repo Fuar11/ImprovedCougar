@@ -15,6 +15,7 @@ using ModData;
 using MelonLoader.TinyJSON; 
 using static Il2Cpp.CarcassSite;
 using Il2CppEasyRoads3Dv3;
+using Random = UnityEngine.Random;
 
 namespace ImprovedCougar
 {
@@ -58,23 +59,27 @@ namespace ImprovedCougar
         public CustomCougarSpawnRegion customCougarSpawnRegion = null;
 
         //spawn region positions
-        public Vector3? currentSpawnRegionPosition = Vector3.zero;
+        public SpawnRegionTerritory? currentTerritory = new(Vector3.zero, null);
 
-        public Vector3? lastSpawnRegionML = null;
-        public Vector3? lastSpawnRegionPV = null;
-        public Vector3? lastSpawnRegionMT = null;
-        public Vector3? lastSpawnRegionTWM = null;
-        public Vector3? lastSpawnRegionBR = null;
-        public Vector3? lastSpawnRegionAC = null;
-        public Vector3? lastSpawnRegionHRV = null;
-        public Vector3? lastSpawnRegionFA = null;
-        public Vector3? lastSpawnRegionSP = null;
+        public SpawnRegionTerritory? lastSpawnRegionML = null;
+        public SpawnRegionTerritory? lastSpawnRegionPV = null;
+        public SpawnRegionTerritory? lastSpawnRegionMT = null;
+        public SpawnRegionTerritory? lastSpawnRegionTWM = null;
+        public SpawnRegionTerritory? lastSpawnRegionBR = null;
+        public SpawnRegionTerritory? lastSpawnRegionAC = null;
+        public SpawnRegionTerritory? lastSpawnRegionHRV = null;
+        public SpawnRegionTerritory? lastSpawnRegionFA = null;
+        public SpawnRegionTerritory? lastSpawnRegionSP = null;
 
         //add modded regions here
 
         //scene
 
         private string latestRegion = string.Empty;
+
+        //carcasses
+
+        public List<CarcassSite> carcasses = new List<CarcassSite>();
 
         //flags
         public bool cougarArrived = true;
@@ -104,15 +109,15 @@ namespace ImprovedCougar
             public float timeToMoveSpawnRegion;
             public float debugTimeToMoveSpawnRegionInHours;
 
-            public Vector3? lastSpawnRegionML;
-            public Vector3? lastSpawnRegionPV;
-            public Vector3? lastSpawnRegionBR;
-            public Vector3? lastSpawnRegionMT;
-            public Vector3? lastSpawnRegionTWM;
-            public Vector3? lastSpawnRegionAC;
-            public Vector3? lastSpawnRegionFA;
-            public Vector3? lastSpawnRegionSP;
-            public Vector3? lastSpawnRegionHRV;
+            public SpawnRegionTerritory? lastSpawnRegionML;
+            public SpawnRegionTerritory? lastSpawnRegionPV;
+            public SpawnRegionTerritory? lastSpawnRegionBR;
+            public SpawnRegionTerritory? lastSpawnRegionMT;
+            public SpawnRegionTerritory? lastSpawnRegionTWM;
+            public SpawnRegionTerritory? lastSpawnRegionAC;
+            public SpawnRegionTerritory? lastSpawnRegionFA;
+            public SpawnRegionTerritory? lastSpawnRegionSP;
+            public SpawnRegionTerritory? lastSpawnRegionHRV;
 
             public string latestRegion;
 
@@ -188,7 +193,7 @@ namespace ImprovedCougar
                 {
                     Main.Logger.Log("Moving spawn region using key press.", FlaggedLoggingLevel.Debug);
                     SetSpawnRegion();
-                    if (toMoveSpawnRegion) UpdateCougarSpawnRegionPosition(latestRegion);
+                    if(toMoveSpawnRegion) UpdateCougarSpawnRegionPosition(latestRegion);
                 } 
             }
         }
@@ -209,7 +214,7 @@ namespace ImprovedCougar
                 {
                     Main.Logger.Log("Region has changed. Checking for existing spawn regions in this region.", FlaggedLoggingLevel.Debug);
                     SetCurrentSpawnRegionToExistingSpawnRegion(SceneUtilities.GetActiveSceneName());
-                    if(currentSpawnRegionPosition == null)
+                    if(currentTerritory == null)
                     {
                         Main.Logger.Log("Region has changed but player has not yet been to this region. Setting a new spawn region.", FlaggedLoggingLevel.Debug);
                         SetSpawnRegion();
@@ -232,21 +237,21 @@ namespace ImprovedCougar
             latestRegion = SceneUtilities.GetActiveSceneName();
 
             //random for now
-            currentSpawnRegionPosition = SpawnRegionPositions.GetRandomSpawnRegion(region);
-            if(currentSpawnRegionPosition == null)
+            currentTerritory = SpawnRegionPositions.GetRandomSpawnRegion(region);
+            if(currentTerritory == null)
             {
                 Main.Logger.Log("Unable to set spawn region!", FlaggedLoggingLevel.Error);
                 return;
             }
 
-            SetPerRegionSpawnRegion((Vector3)currentSpawnRegionPosition, region);
+            SetPerRegionSpawnRegion((Vector3)currentTerritory.position, region);
 
             int timeToAdd = random.Next(minTimeTillNextSpawnRegionMoveInHours, maxTimeTillNextSpawnRegionMoveInHours);
             timeToMoveSpawnRegion = GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() + timeToAdd;
             debugTimeToMoveSpawnRegionInHours = timeToAdd; //this is just to view the time in hours to wait until the next one in ue
             toMoveSpawnRegion = true;
             toSetNewSpawnRegion = false;
-            Main.Logger.Log($"New spawn region {currentSpawnRegionPosition} set!", FlaggedLoggingLevel.Debug);
+            Main.Logger.Log($"New spawn region {currentTerritory} set!", FlaggedLoggingLevel.Debug);
         }
 
         public void UpdateCougarSpawnRegionPosition(string scene)
@@ -263,7 +268,7 @@ namespace ImprovedCougar
                     return;
                 }
 
-                if(currentSpawnRegionPosition == null)
+                if(currentTerritory == null)
                 {
                     Main.Logger.Log("Unable to move spawn region!", FlaggedLoggingLevel.Error);
                     return;
@@ -271,7 +276,7 @@ namespace ImprovedCougar
 
                 Main.Logger.Log($"Old spawn region position {territoryObject.transform.position.ToString()}", FlaggedLoggingLevel.Debug);
 
-                territoryObject.transform.position = (Vector3)currentSpawnRegionPosition;
+                territoryObject.transform.position = (Vector3)currentTerritory.position;
                 //territoryObject.transform.position = new Vector3(102.14f, 2.65f, 79.10f); //temporary testing spawn at trapper's
 
                 Main.Logger.Log($"New spawn region position {territoryObject.transform.position.ToString()}", FlaggedLoggingLevel.Debug);
@@ -280,6 +285,9 @@ namespace ImprovedCougar
                 spawnRegionObject.gameObject.SetActive(true); //set spawn region object to true
                 territoryObject.transform.GetChild(1).gameObject.SetActive(true); //set audio object to true
                 territoryObject.transform.GetChild(2).gameObject.SetActive(true); //set wander region object to true, idk if this is used
+
+                AddCarcasses();
+                
                 if (!spawnRegionObject.TryGetComponent(out SpawnRegion spawnRegion))
                 {
                     Main.Logger.Log("Spawn region object does not have a SpawnRegion component!", FlaggedLoggingLevel.Error);
@@ -301,7 +309,7 @@ namespace ImprovedCougar
                 return;
             }
             customCougarSpawnRegion = (CustomCougarSpawnRegion)customSpawnRegion;
-            customCougarSpawnRegion.SpawnCougar((Vector3)currentSpawnRegionPosition, new Quaternion(0, 0, 0, 0), (customCougar) =>
+            customCougarSpawnRegion.SpawnCougar((Vector3)currentTerritory.position, new Quaternion(0, 0, 0, 0), (customCougar) =>
             {
                 // bad kitty
             });
@@ -315,31 +323,31 @@ namespace ImprovedCougar
             switch (region)
             {
                 case "LakeRegion":
-                    currentSpawnRegionPosition = lastSpawnRegionML;
+                    currentTerritory = lastSpawnRegionML;
                     break;
                 case "RuralRegion":
-                    currentSpawnRegionPosition = lastSpawnRegionPV;
+                    currentTerritory = lastSpawnRegionPV;
                     break;
                 case "MountainTownRegion":
-                    currentSpawnRegionPosition = lastSpawnRegionMT;
+                    currentTerritory = lastSpawnRegionMT;
                     break;
                 case "CrashMountainRegion":
-                    currentSpawnRegionPosition = lastSpawnRegionTWM;
+                    currentTerritory = lastSpawnRegionTWM;
                     break;
                 case "AshCanyonRegion":
-                    currentSpawnRegionPosition = lastSpawnRegionAC;
+                    currentTerritory = lastSpawnRegionAC;
                     break;
                 case "BlackrockRegion":
-                    currentSpawnRegionPosition = lastSpawnRegionBR;
+                    currentTerritory = lastSpawnRegionBR;
                     break;
                 case "RiverValleyRegion":
-                    currentSpawnRegionPosition = lastSpawnRegionHRV;
+                    currentTerritory = lastSpawnRegionHRV;
                     break;
                 case "AirfieldRegion":
-                    currentSpawnRegionPosition = lastSpawnRegionFA;
+                    currentTerritory = lastSpawnRegionFA;
                     break;
                 case "MountainPassRegion":
-                    currentSpawnRegionPosition = lastSpawnRegionSP;
+                    currentTerritory = lastSpawnRegionSP;
                     break;
                 default: break;
             }
@@ -352,37 +360,74 @@ namespace ImprovedCougar
             switch (region)
             {
                 case "LakeRegion":
-                    lastSpawnRegionML = currentSpawnRegionPosition;
+                    lastSpawnRegionML = currentTerritory;
                     break;
                 case "RuralRegion":
-                     lastSpawnRegionPV = currentSpawnRegionPosition;
+                     lastSpawnRegionPV = currentTerritory;
                     break;
                 case "MountainTownRegion":
-                     lastSpawnRegionMT = currentSpawnRegionPosition;
+                     lastSpawnRegionMT = currentTerritory;
                     break;
                 case "CrashMountainRegion":
-                    lastSpawnRegionTWM = currentSpawnRegionPosition;
+                    lastSpawnRegionTWM = currentTerritory;
                     break;
                 case "AshCanyonRegion":
-                    lastSpawnRegionAC = currentSpawnRegionPosition;
+                    lastSpawnRegionAC = currentTerritory;
                     break;
                 case "BlackrockRegion":
-                    lastSpawnRegionBR = currentSpawnRegionPosition;
+                    lastSpawnRegionBR = currentTerritory;
                     break;
                 case "RiverValleyRegion":
-                    lastSpawnRegionHRV = currentSpawnRegionPosition;
+                    lastSpawnRegionHRV = currentTerritory;
                     break;
                 case "AirfieldRegion":
-                    lastSpawnRegionFA = currentSpawnRegionPosition;
+                    lastSpawnRegionFA = currentTerritory;
                     break;
                 case "MountainPassRegion":
-                    lastSpawnRegionSP = currentSpawnRegionPosition;
+                    lastSpawnRegionSP = currentTerritory;
                     break;
                 default: break;
             }
 
         }
 
+        private void AddCarcasses()
+        {
+
+            //carcasses.Do(_ => GameObject.Destroy(_));
+
+            foreach (var i in carcasses)
+            {
+                GameObject.Destroy(i.gameObject);
+            }
+
+            carcasses.Clear();
+
+            List<Vector3> chosenPositions = currentTerritory.carcassPositions;
+            if (chosenPositions == null || chosenPositions.Count == 0)
+            {
+                Main.Logger.Log("Carcass positions for current territory is empty.", FlaggedLoggingLevel.Debug);
+                return;
+            }
+
+            if(chosenPositions.Count == 1)
+            {
+                carcasses.Add(SpawnRegionPositions.SpawnRavagedCarcassAtPosition(chosenPositions[0]));
+                return;
+            }
+
+            int max = chosenPositions.Count - 1;
+            int subset = Random.Range(1, max + 1);
+
+            chosenPositions.OrderBy(_ => Random.value).Take(subset).ToList();
+
+            foreach (Vector3 pos in chosenPositions)
+            {
+                carcasses.Add(SpawnRegionPositions.SpawnRavagedCarcassAtPosition(pos));
+            }
+
+
+        }
         public bool RegionHasCougar(string scene) //gotta add TLDev regions to this list at some point
         {
             return scene == "LakeRegion" || scene == "RuralRegion" || scene == "TracksRegion" || scene == "MountainCrashRegion" || scene == "MountainTownRegion" || scene == "AshCanyonRegion" || scene == "BlackrockRegion" || scene == "RiverValleyRegion" || scene == "AirfieldRegion" || scene == "MiningRegion" || scene == "MountainPassRegion" ? true : false;

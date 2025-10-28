@@ -5,6 +5,8 @@ using UnityEngine.Rendering.PostProcessing;
 using UnityEngine;
 using ImprovedCougar.SpawnRegions;
 using AudioMgr;
+using Il2CppRewired;
+using InputManager = Il2Cpp.InputManager;
 
 namespace ImprovedCougar
 {
@@ -45,6 +47,16 @@ namespace ImprovedCougar
             if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.DownArrow))
             {
                 SpawnRegionPositions.AddMarkersToSpawnRegions(SceneUtilities.GetActiveSceneName());
+            }
+
+            if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.UpArrow))
+            {
+
+                Vector3 pos = GameManager.GetPlayerTransform().position;
+                string formatted = $"new Vector3({pos.x:F2}f, {pos.y:F2}f, {pos.z:F2}f)";
+                GUIUtility.systemCopyBuffer = formatted;
+                Logger.Log($"Copied player position: {formatted}", FlaggedLoggingLevel.Debug);
+
             }
 
 
