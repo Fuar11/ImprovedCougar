@@ -398,6 +398,9 @@ namespace ImprovedCougar
 
             foreach (var i in carcasses)
             {
+                if (i == null) continue;
+
+                i.m_Carrion.enabled = false;
                 GameObject.Destroy(i.gameObject);
             }
 
@@ -406,7 +409,6 @@ namespace ImprovedCougar
             List<Vector3> chosenPositions = currentTerritory.carcassPositions;
             if (chosenPositions == null || chosenPositions.Count == 0)
             {
-                Main.Logger.Log("Carcass positions for current territory is empty.", FlaggedLoggingLevel.Debug);
                 return;
             }
 

@@ -73,6 +73,15 @@ namespace ImprovedCougar
                 EAFManager.Instance.HotSwapSubManager(EAFManager.HotSwappableSubManagers.CougarManager, CustomCougarManager);
             }
 
+            foreach (GameObject go in Resources.FindObjectsOfTypeAll<GameObject>())
+            {
+                if (go.name.Equals("CarcassSite_DoeEaten"))
+                {
+                    CustomCougarManager.carcassPrefab = go;
+                    Main.Logger.Log($"Found carcass prefab.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                }
+            }
+
             if (sceneName.ToLowerInvariant().Contains("menu"))
             {
                 cougarAudioManager = AudioMaster.NewClipManager();
