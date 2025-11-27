@@ -67,7 +67,7 @@
 				"z": -59.225525
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "DeadfallAreaForest",
 		"mAnchorPosition": {
 			"x": 492.63333,
@@ -216,7 +216,7 @@
 				"z": 583.50867
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "LakeHill",
 		"mAnchorPosition": {
 			"x": 1632.9867,
@@ -325,7 +325,7 @@
 				"z": 242.37027
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "Backwoods",
 		"mAnchorPosition": {
 			"x": -62.373062,
@@ -579,7 +579,7 @@
 				"z": 1009.7688
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "WoodsCabin",
 		"mAnchorPosition": {
 			"x": -69.31314,
@@ -888,7 +888,7 @@
 				"z": 1689.2552
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "LoggingRoad",
 		"mAnchorPosition": {
 			"x": 1226.3053,
@@ -1187,7 +1187,7 @@
 				"z": 925.2046
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "Plateau",
 		"mAnchorPosition": {
 			"x": 1226.3348,
@@ -1316,7 +1316,7 @@
 				"z": 967.7418
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "LookoutMountain",
 		"mAnchorPosition": {
 			"x": 922.8015,
@@ -1520,7 +1520,7 @@
 				"z": 320.83182
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "SignalHill",
 		"mAnchorPosition": {
 			"x": 2083.003,
@@ -1774,7 +1774,7 @@
 				"z": 686.1002
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "MountainRoad",
 		"mAnchorPosition": {
 			"x": 2567.63,
@@ -2083,7 +2083,7 @@
 				"z": 1730.887
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "PicnicArea",
 		"mAnchorPosition": {
 			"x": 2182.308,
@@ -2352,7 +2352,7 @@
 				"z": 1873.0115
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "ThompsonForest",
 		"mAnchorPosition": {
 			"x": 2829.8452,
@@ -2611,7 +2611,7 @@
 				"z": 2646.4563
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "ThompsonWaterfall",
 		"mAnchorPosition": {
 			"x": 2586.202,
@@ -2875,7 +2875,7 @@
 				"z": 2641.875
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "MiningRoad",
 		"mAnchorPosition": {
 			"x": 2095.3904,
@@ -3139,7 +3139,7 @@
 				"z": 2732.3586
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "DerelictCabins",
 		"mAnchorPosition": {
 			"x": 1473.4872,
@@ -3313,7 +3313,7 @@
 				"z": 2520.6458
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "MistyFalls",
 		"mAnchorPosition": {
 			"x": 607.3023,
@@ -3487,7 +3487,7 @@
 				"z": 1852.0979
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "SkeetersRidge",
 		"mAnchorPosition": {
 			"x": 268.4808,
@@ -3751,7 +3751,7 @@
 				"z": 1081.0889
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "Backroad",
 		"mAnchorPosition": {
 			"x": 185.99213,
@@ -3965,7 +3965,7 @@
 				"z": 300.01962
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "ThreeStrikes",
 		"mAnchorPosition": {
 			"x": 424.18207,
@@ -4119,7 +4119,7 @@
 				"z": 319.03452
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "RiverWoods",
 		"mAnchorPosition": {
 			"x": 1446.792,
@@ -4389,7 +4389,7 @@
 				"z": 2335.8213
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "CaveField",
 		"mAnchorPosition": {
 			"x": 1328.2527,
@@ -4488,7 +4488,7 @@
 				"z": 2292.451
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "LoggingTrailer",
 		"mAnchorPosition": {
 			"x": 825.0501,
@@ -4627,7 +4627,7 @@
 				"z": 1848.4734
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "Church",
 		"mAnchorPosition": {
 			"x": 553.9802,
@@ -4726,7 +4726,7 @@
 				"z": 1229.7882
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "FarmHill",
 		"mAnchorPosition": {
 			"x": 877.6184,
@@ -4865,7 +4865,7 @@
 				"z": 1457.9193
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "WoodLot",
 		"mAnchorPosition": {
 			"x": 1384.2427,
@@ -4989,7 +4989,7 @@
 				"z": 1502.2845
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "PlanePath",
 		"mAnchorPosition": {
 			"x": 1937.9506,
@@ -5188,7 +5188,7 @@
 				"z": 797.9234
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "Stairsteps",
 		"mAnchorPosition": {
 			"x": 361.1309,
@@ -5342,7 +5342,7 @@
 				"z": 1095.4762
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "OffsetFalls",
 		"mAnchorPosition": {
 			"x": 237.52238,
@@ -5461,7 +5461,7 @@
 				"z": 1594.2185
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "NorthCliffs",
 		"mAnchorPosition": {
 			"x": 565.25055,
@@ -5560,7 +5560,7 @@
 				"z": 1465.243
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048
 		"mName": "MammothFalls2",
 		"mAnchorPosition": {
 			"x": 809.0019,
@@ -5799,7 +5799,7 @@
 				"z": 1243.0806
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "MonolithLake",
 		"mAnchorPosition": {
 			"x": 1211.5078,
@@ -5953,7 +5953,7 @@
 				"z": 1047.0872
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "HushedRiverForest",
 		"mAnchorPosition": {
 			"x": 573.17426,
@@ -6097,7 +6097,7 @@
 				"z": -199.47903
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "Substation",
 		"mAnchorPosition": {
 			"x": -549.2497,
@@ -6196,7 +6196,7 @@
 				"z": 135.48145
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "BearBend",
 		"mAnchorPosition": {
 			"x": -884.14014,
@@ -6275,7 +6275,7 @@
 				"z": -137.026
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "BearBend2",
 		"mAnchorPosition": {
 			"x": -819.1223,
@@ -6379,7 +6379,7 @@
 				"z": 478.0327
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "ForagerRemnant",
 		"mAnchorPosition": {
 			"x": -867.5856,
@@ -6548,7 +6548,7 @@
 				"z": -616.314
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "JailersResidence",
 		"mAnchorPosition": {
 			"x": 59.246704,
@@ -6757,7 +6757,7 @@
 				"z": -603.1993
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "CuttysCave",
 		"mAnchorPosition": {
 			"x": 411.1438,
@@ -6881,7 +6881,7 @@
 				"z": 188.50842
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "SprucePatch",
 		"mAnchorPosition": {
 			"x": 334.84753,
@@ -7070,7 +7070,7 @@
 				"z": 287.63416
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "HuntingBlind",
 		"mAnchorPosition": {
 			"x": 671.954,
@@ -7249,7 +7249,7 @@
 				"z": 86.327515
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "Bricklayers",
 		"mAnchorPosition": {
 			"x": 1065.0508,
@@ -7398,7 +7398,7 @@
 				"z": -700.15125
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "Bunker",
 		"mAnchorPosition": {
 			"x": 29.50459,
@@ -7657,7 +7657,7 @@
 				"z": -418.49722
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "PillarsFootrest",
 		"mAnchorPosition": {
 			"x": -288.46375,
@@ -7876,7 +7876,7 @@
 				"z": -70.28125
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "BirchForest",
 		"mAnchorPosition": {
 			"x": -791.1226,
@@ -8005,7 +8005,7 @@
 				"z": -97.23938
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "ClimbersPlateau1",
 		"mAnchorPosition": {
 			"x": -322.1977,
@@ -8239,7 +8239,7 @@
 				"z": -526.2522
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "ClimbersPlateau2",
 		"mAnchorPosition": {
 			"x": -83.47128,
@@ -8533,7 +8533,7 @@
 				"z": 132.82205
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "FireOverlook",
 		"mAnchorPosition": {
 			"x": 476.46277,
@@ -8657,7 +8657,7 @@
 				"z": 449.7869
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "NarrowFalls",
 		"mAnchorPosition": {
 			"x": 519.681,
@@ -8786,7 +8786,7 @@
 				"z": 789.9147
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "WaterfallBasin",
 		"mAnchorPosition": {
 			"x": 156.4871,
@@ -8986,7 +8986,7 @@
 				"z": 129.31633
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "entrance",
 		"mAnchorPosition": {
 			"x": 435.61804,
@@ -9165,7 +9165,7 @@
 				"z": 451.16962
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "River",
 		"mAnchorPosition": {
 			"x": 259.2546,
@@ -9279,7 +9279,7 @@
 				"z": 1590.2697
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "EricsFalls",
 		"mAnchorPosition": {
 			"x": 211.34071,
@@ -9463,7 +9463,7 @@
 				"z": 1184.9878
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "AndresPeak",
 		"mAnchorPosition": {
 			"x": 242.28181,
@@ -9612,7 +9612,7 @@
 				"z": 1831.8113
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "Backside",
 		"mAnchorPosition": {
 			"x": 680.90826,
@@ -9746,7 +9746,7 @@
 				"z": 1165.7605
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "RavineBridge",
 		"mAnchorPosition": {
 			"x": 1369.2502,
@@ -9930,7 +9930,7 @@
 				"z": 530.9232
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "WanderPath",
 		"mAnchorPosition": {
 			"x": 1785.3202,
@@ -10094,7 +10094,7 @@
 				"z": -1268.0448
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "Junkers",
 		"mAnchorPosition": {
 			"x": -1087.1394,
@@ -10278,7 +10278,7 @@
 				"z": -475.58215
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "WaterfallPlateau",
 		"mAnchorPosition": {
 			"x": -1022.0526,
@@ -10462,7 +10462,7 @@
 				"z": -785.5106
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "FrozenRiver",
 		"mAnchorPosition": {
 			"x": -707.48126,
@@ -10521,7 +10521,7 @@
 				"z": -1283.8506
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "Shortcut",
 		"mAnchorPosition": {
 			"x": 224.42188,
@@ -10715,7 +10715,7 @@
 				"z": -981.25555
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "JustysHovel",
 		"mAnchorPosition": {
 			"x": 745.88257,
@@ -10884,7 +10884,7 @@
 				"z": 348.53162
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "ChopperCrash",
 		"mAnchorPosition": {
 			"x": 1004.56067,
@@ -11008,7 +11008,7 @@
 				"z": 1404.5212
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "TransitionCave",
 		"mAnchorPosition": {
 			"x": 1020.2446,
@@ -11137,7 +11137,7 @@
 				"z": 1245.6584
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "MindfulCabin",
 		"mAnchorPosition": {
 			"x": -1245.6211,
@@ -11251,7 +11251,7 @@
 				"z": 1073.471
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "MindfulCabin2",
 		"mAnchorPosition": {
 			"x": -780.1253,
@@ -11340,7 +11340,7 @@
 				"z": 420.58362
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "RoadForest",
 		"mAnchorPosition": {
 			"x": -1360.6436,
@@ -11594,7 +11594,7 @@
 				"z": 949.34094
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "HiddenPath",
 		"mAnchorPosition": {
 			"x": 223.96997,
@@ -11648,7 +11648,7 @@
 				"z": 710.82605
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "BanefulBridge",
 		"mAnchorPosition": {
 			"x": 280.76917,
@@ -11827,7 +11827,7 @@
 				"z": -419.65283
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "Teardrop1",
 		"mAnchorPosition": {
 			"x": 971.08765,
@@ -11946,7 +11946,7 @@
 				"z": 70.77539
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "BasinPlateau",
 		"mAnchorPosition": {
 			"x": 1112.0627,
@@ -12090,7 +12090,7 @@
 				"z": 268.9701
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "ClimbingSpot",
 		"mAnchorPosition": {
 			"x": 1158.4539,
@@ -12259,7 +12259,7 @@
 				"z": -688.8068
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "Teardrop2",
 		"mAnchorPosition": {
 			"x": 920.37573,
@@ -12378,7 +12378,7 @@
 				"z": -869.2274
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "PlaneCrash",
 		"mAnchorPosition": {
 			"x": 1121.1953,
@@ -12432,7 +12432,7 @@
 				"z": -957.0624
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "Mine",
 		"mAnchorPosition": {
 			"x": -66.25806,
@@ -12501,7 +12501,7 @@
 				"z": -757.7798
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "MiddlePlateau",
 		"mAnchorPosition": {
 			"x": 92.96033,
@@ -12605,7 +12605,7 @@
 				"z": 523.2333
 			}
 		],
-		"mWanderPathType": "11",
+		"mWanderPathFlagsSerialized": 2048,
 		"mName": "FrozenWaterfalls",
 		"mAnchorPosition": {
 			"x": 84.90723,

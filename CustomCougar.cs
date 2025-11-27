@@ -35,14 +35,10 @@ namespace ImprovedCougar
             COUNT
         }
 
-        public enum CougarPath : int
-        {
-            Cougar = 11,
-        }
-
         public CustomCougar(IntPtr ptr) : base(ptr) { }
 
         protected WanderPath wanderPath;
+        protected WanderPathLoader mWanderPathLoader;
         protected bool WanderPathConnected = false;
         protected bool mFetchingWanderPath = false;
         protected bool toStartFollowWanderPathMode = true;
@@ -102,6 +98,7 @@ namespace ImprovedCougar
         public override void Initialize(BaseAi ai, TimeOfDay timeOfDay, SpawnRegion spawnRegion, SpawnModDataProxy proxy)
         {
             base.Initialize(ai, timeOfDay, spawnRegion, proxy);
+            mWanderPathLoader = new WanderPathLoader(this, proxy, mManager.DataManager, CheckIfWanderPathIsForCougar);
             mBaseAi.m_DefaultMode = AiMode.Wander;
             mBaseAi.m_StartMode = AiMode.Wander;
             mBaseAi.m_AttackChanceAfterNearMissGunshot = 10;
@@ -471,18 +468,12 @@ namespace ImprovedCougar
             Transform player = GameManager.GetPlayerTransform();
             Transform cougar = mBaseAi.transform;
 
-            if (!WanderPathConnected)
+            if (!mWanderPathLoader.Connected())
             {
-                Main.Logger.Log("No wanderpath connected.", ComplexLogger.FlaggedLoggingLevel.Debug);
-                if (!TryGetSavedWanderPath(mModDataProxy))
-                {
-                    Main.Logger.Log("No wanderpath saved.", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    mManager.DataManager.ScheduleMapDataRequest<WanderPath>(new GetNearestMapDataRequest<WanderPath>(mBaseAi.transform.position, mModDataProxy.Scene, (nearestSpot, result2) =>
-                    {
-                       AttachWanderPath(nearestSpot);
-                    }, false, CheckIfWanderPathIsForCougar, 0));            
-                }
+                Main.Logger.Log("No wanderpath connected Loading nearest....", ComplexLogger.FlaggedLoggingLevel.Debug);
             }
+
+            wanderPath = mWanderPathLoader.Data;
 
             if(wanderPath == null)
             {
@@ -496,7 +487,7 @@ namespace ImprovedCougar
             currentSpeed = wanderSpeed; //for consistency, i know this is useless
             mBaseAi.m_AiGoalSpeed = wanderSpeed;
             mBaseAi.SetAiMode(AiMode.FollowWaypoints);
-            string pathType = (CougarPath)wanderPath.WanderPathType == CougarPath.Cougar ? "cougar" : "non-cougar";
+            string pathType = wanderPath.WanderPathFlags == WanderPathFlags.Cougar ? "cougar" : "non-cougar";
             Main.Logger.Log($"Following {pathType} path {wanderPath.Guid.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
             toStartFollowWanderPathMode = false;
@@ -508,9 +499,9 @@ namespace ImprovedCougar
 
         public bool CheckIfWanderPathIsForCougar(WanderPath path)
         {
-            if ((CougarPath)path.WanderPathType == CougarPath.Cougar) Main.Logger.Log("WanderPath is Cougar wanderpath", ComplexLogger.FlaggedLoggingLevel.Debug);
+            if (path.WanderPathFlags == WanderPathFlags.Cougar) Main.Logger.Log("WanderPath is Cougar wanderpath", ComplexLogger.FlaggedLoggingLevel.Debug);
             else Main.Logger.Log("WanderPath is NOT cougar path.", ComplexLogger.FlaggedLoggingLevel.Debug);
-            return (CougarPath)path.WanderPathType == CougarPath.Cougar ? true : false;
+            return path.WanderPathFlags == WanderPathFlags.Cougar ? true : false;
         }  
 
         protected void PreProcessingFollowPath()
