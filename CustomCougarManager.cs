@@ -154,7 +154,7 @@ namespace ImprovedCougar
                 if (go.name.Equals("CarcassSite_DoeEaten"))
                 {
                     carcassPrefab = go;
-                    Main.Logger.Log($"Found carcass prefab: {carcassPrefab.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    //Main.Logger.Log($"Found carcass prefab: {carcassPrefab.name}", ComplexLogger.FlaggedLoggingLevel.Debug);
                 }
             }
         }
@@ -187,14 +187,6 @@ namespace ImprovedCougar
             if (cougarArrived)
             {
                 UpdateSpawnRegion();
-
-                //debug
-                if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.Z))
-                {
-                    Main.Logger.Log("Moving spawn region using key press.", FlaggedLoggingLevel.Debug);
-                    SetSpawnRegion();
-                    if(toMoveSpawnRegion) UpdateCougarSpawnRegionPosition(latestRegion);
-                } 
             }
         }
 
@@ -207,16 +199,16 @@ namespace ImprovedCougar
                 //check if it's time to pick a new territory, eventually there will be more conditions than just this
                 if (GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() >= timeToMoveSpawnRegion || toSetNewSpawnRegion)
                 {
-                    Main.Logger.Log("Player is outside, executing new spawn region logic", FlaggedLoggingLevel.Debug);
+                    //Main.Logger.Log("Player is outside, executing new spawn region logic", FlaggedLoggingLevel.Debug);
                     SetSpawnRegion();
                 }
                 else if (HasChangedRegions())
                 {
-                    Main.Logger.Log("Region has changed. Checking for existing spawn regions in this region.", FlaggedLoggingLevel.Debug);
+                    //Main.Logger.Log("Region has changed. Checking for existing spawn regions in this region.", FlaggedLoggingLevel.Debug);
                     SetCurrentSpawnRegionToExistingSpawnRegion(SceneUtilities.GetActiveSceneName());
                     if(currentTerritory == null)
                     {
-                        Main.Logger.Log("Region has changed but player has not yet been to this region. Setting a new spawn region.", FlaggedLoggingLevel.Debug);
+                        //Main.Logger.Log("Region has changed but player has not yet been to this region. Setting a new spawn region.", FlaggedLoggingLevel.Debug);
                         SetSpawnRegion();
                     }
 
@@ -240,7 +232,7 @@ namespace ImprovedCougar
             currentTerritory = SpawnRegionPositions.GetRandomSpawnRegion(region);
             if(currentTerritory == null)
             {
-                Main.Logger.Log("Unable to set spawn region!", FlaggedLoggingLevel.Error);
+                Main.Logger.Log("Unable to set cougar spawn region!", FlaggedLoggingLevel.Error);
                 return;
             }
 
@@ -251,7 +243,7 @@ namespace ImprovedCougar
             debugTimeToMoveSpawnRegionInHours = timeToAdd; //this is just to view the time in hours to wait until the next one in ue
             toMoveSpawnRegion = true;
             toSetNewSpawnRegion = false;
-            Main.Logger.Log($"New spawn region {currentTerritory} set!", FlaggedLoggingLevel.Debug);
+            //Main.Logger.Log($"New spawn region {currentTerritory} set!", FlaggedLoggingLevel.Debug);
         }
 
         public void UpdateCougarSpawnRegionPosition(string scene)
@@ -274,12 +266,12 @@ namespace ImprovedCougar
                     return;
                 }
 
-                Main.Logger.Log($"Old spawn region position {territoryObject.transform.position.ToString()}", FlaggedLoggingLevel.Debug);
+                //Main.Logger.Log($"Old spawn region position {territoryObject.transform.position.ToString()}", FlaggedLoggingLevel.Debug);
 
                 territoryObject.transform.position = (Vector3)currentTerritory.position;
                 //territoryObject.transform.position = new Vector3(102.14f, 2.65f, 79.10f); //temporary testing spawn at trapper's
 
-                Main.Logger.Log($"New spawn region position {territoryObject.transform.position.ToString()}", FlaggedLoggingLevel.Debug);
+                //Main.Logger.Log($"New spawn region position {territoryObject.transform.position.ToString()}", FlaggedLoggingLevel.Debug);
 
                 GameObject spawnRegionObject = territoryObject.transform.GetChild(0).gameObject;
                 spawnRegionObject.gameObject.SetActive(true); //set spawn region object to true
@@ -476,7 +468,7 @@ namespace ImprovedCougar
                 && !sceneName.Contains("_WILDLIFE") 
                 && !sceneName.Contains("_VFX"))
             {
-                Logger.Log("Setting toMoveSpawnRegion to true", FlaggedLoggingLevel.Debug);
+                //Logger.Log("Setting toMoveSpawnRegion to true", FlaggedLoggingLevel.Debug);
                 toMoveSpawnRegion = true;
                 IsMenuScene = false;
             }

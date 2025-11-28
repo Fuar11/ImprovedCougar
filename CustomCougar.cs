@@ -65,7 +65,6 @@ namespace ImprovedCougar
         //states
         private bool toTeleport = false;
         private bool toHide = false;
-        private bool toFreeze = false;
         private bool stopFreezing = false;
         private bool isInvisible = false;
 
@@ -76,7 +75,6 @@ namespace ImprovedCougar
         float reachThreshold = 0.5f;
         bool pathBroken = false;
 
-        Vector3 spawnPosition = Vector3.zero; //temporary territory node position
         Vector3 retreatPosition;
 
         //time
@@ -103,14 +101,12 @@ namespace ImprovedCougar
             mBaseAi.m_StartMode = AiMode.Wander;
             mBaseAi.m_AttackChanceAfterNearMissGunshot = 10;
             mBaseAi.m_AttackChanceAfterNearMissRevolverShot = 5;
-            //mBaseAi.m_DetectionRange *= 2 //this is temporary
+            mBaseAi.m_DetectionRange *= 2f;
             wanderSpeed = mBaseAi.m_WalkSpeed + 1f;
             baseStalkSpeed = mBaseAi.m_StalkSpeed + 2;
             closeStalkSpeed = mBaseAi.m_StalkSpeed;
             spottedRetreatSpeed = mBaseAi.m_StalkSpeed - 1;
             attackSpeed = Settings.CustomSettings.settings.cougarSpeed;
-            //this is temporary
-            spawnPosition = mBaseAi.transform.position;
 
             mBaseAi.m_WaypointCompletionBehaviour = BaseAi.WaypointCompletionBehaviouir.Restart;
             mBaseAi.m_TargetWaypointIndex = 0;
@@ -186,11 +182,10 @@ namespace ImprovedCougar
                 timeSinceLastPath += Time.deltaTime;
                 if (timeSinceLastPath > recalcInterval || pathBroken)
                 {
-                    Main.Logger.Log("Calculating path...", ComplexLogger.FlaggedLoggingLevel.Debug);
                     StartStalkingPathfinding();
                 }
 
-                Main.Logger.Log($"Cougar Distance: {currentDistance}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                //Main.Logger.Log($"Cougar Distance: {currentDistance}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                 if (CougarCanSeePlayerLooking(player, cougar))
                 {
@@ -204,7 +199,7 @@ namespace ImprovedCougar
                     }
                     else timeToFreezeFor = 1f;
 
-                    Main.Logger.Log($"Cougar can see player looking, freezing for {timeToFreezeFor} seconds and assessing.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    //Main.Logger.Log($"Cougar can see player looking, freezing for {timeToFreezeFor} seconds and assessing.", ComplexLogger.FlaggedLoggingLevel.Debug);
                     toHide = true;
                     SetAiMode((AiMode)CustomCougarAiMode.Freeze);
                 }
@@ -268,7 +263,7 @@ namespace ImprovedCougar
                     //if no path found it probably means there is no cover nearby, so it isn't stealthy enough to keep stalking. If close enough keep going 
 
                     //i can probably change this to detect for allowed areas or something
-                    Main.Logger.Log("Cougar is in open area! Continuing directly to player.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    //Main.Logger.Log("Cougar is in open area! Continuing directly to player.", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                     mBaseAi.StartPath(playerPosition, currentSpeed);                   
                 }
@@ -306,7 +301,7 @@ namespace ImprovedCougar
                 timeSinceHiding += Time.deltaTime;
                 if (timeSinceHiding > timeToComeOut)
                 {
-                    Main.Logger.Log("Cougar is hiding and player is not looking. Continuing to stalk...", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    //Main.Logger.Log("Cougar is hiding and player is not looking. Continuing to stalk...", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                     //change state here  
                     SetAiMode(AiMode.Stalking);
@@ -335,7 +330,7 @@ namespace ImprovedCougar
                 //add more complex behavior decision making here
                 if (IsPlayerFacingCougar(player, cougar))
                 {
-                    Main.Logger.Log("Cougar is freezing for too long and player is looking. Gonna retreat to cover...", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    //Main.Logger.Log("Cougar is freezing for too long and player is looking. Gonna retreat to cover...", ComplexLogger.FlaggedLoggingLevel.Debug);
 
                     //change state here  
                     currentSpeed = spottedRetreatSpeed;
@@ -344,7 +339,7 @@ namespace ImprovedCougar
                 }
                 else
                 {
-                    Main.Logger.Log("Cougar is freezing for too long and player is not looking. Teleporting cougar to retreat point and hiding...", ComplexLogger.FlaggedLoggingLevel.Debug);
+                    //Main.Logger.Log("Cougar is freezing for too long and player is not looking. Teleporting cougar to retreat point and hiding...", ComplexLogger.FlaggedLoggingLevel.Debug);
                     retreatPosition = lastPosition != Vector3.zero ? lastPosition : (Vector3)FindRetreatCoverPoint(cougar, player, 65f, Utils.m_PhysicalCollisionLayerMask);
                     TeleportCougarToPosition(retreatPosition, cougar);
                     SetAiMode((AiMode)CustomCougarAiMode.Hide);
@@ -401,7 +396,7 @@ namespace ImprovedCougar
 
             StartStalkingPathfinding();
 
-            Main.Logger.Log("Cougar is stalking player", ComplexLogger.FlaggedLoggingLevel.Debug);
+            //Main.Logger.Log("Cougar is stalking player", ComplexLogger.FlaggedLoggingLevel.Debug);
             //InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is stalking player!");
         }
 
@@ -415,14 +410,14 @@ namespace ImprovedCougar
             toHide = false;
             ToggleInvisibility();
 
-            Main.Logger.Log("Hiding in cover", ComplexLogger.FlaggedLoggingLevel.Debug);
+            //Main.Logger.Log("Hiding in cover", ComplexLogger.FlaggedLoggingLevel.Debug);
             //InterfaceManager.GetPanel<Panel_BodyHarvest>().DisplayErrorMessage("Cougar is moving to cover!");
 
         }
 
         protected void StopHiding()
         {
-            Main.Logger.Log("Leaving cover", ComplexLogger.FlaggedLoggingLevel.Debug);
+            //Main.Logger.Log("Leaving cover", ComplexLogger.FlaggedLoggingLevel.Debug);
             ToggleInvisibility();
         }
 
@@ -430,7 +425,7 @@ namespace ImprovedCougar
 
         protected void StopFollowWaypoints()
         {
-            Main.Logger.Log("Leaving wander path", ComplexLogger.FlaggedLoggingLevel.Debug);
+            //Main.Logger.Log("Leaving wander path", ComplexLogger.FlaggedLoggingLevel.Debug);
             lastWaypointPosition = mBaseAi.transform.position;
         }
 
@@ -441,15 +436,14 @@ namespace ImprovedCougar
 
             timeSinceFreezing = 0f;
             mBaseAi.MoveAgentStop();
-            toFreeze = false;
-            Main.Logger.Log("Cougar is freezing!", ComplexLogger.FlaggedLoggingLevel.Debug);
+            //Main.Logger.Log("Cougar is freezing!", ComplexLogger.FlaggedLoggingLevel.Debug);
 
         }
 
         protected void BeginRetreating()
         {
             currentSpeed = baseStalkSpeed;
-            Main.Logger.Log("Cougar is retreating!", ComplexLogger.FlaggedLoggingLevel.Debug);
+            //Main.Logger.Log("Cougar is retreating!", ComplexLogger.FlaggedLoggingLevel.Debug);
         }
 
         protected void BeginAttacking()
@@ -514,7 +508,7 @@ namespace ImprovedCougar
 
             if (!mBaseAi.CanPathfindToPosition(waypoint))
             {
-                Main.Logger.Log($"Cannot pathfind to next waypoint at {waypoint.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+                //Main.Logger.Log($"Cannot pathfind to next waypoint at {waypoint.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
                 TeleportCougarToPosition(waypoint, mBaseAi.transform);
             } 
 
@@ -1022,17 +1016,6 @@ namespace ImprovedCougar
         private void DoOnUpdate()
         {
 
-            if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.RightArrow))
-            {
-                Main.Logger.Log("Activating wander path mode!", ComplexLogger.FlaggedLoggingLevel.Debug);
-                StartFollowWanderPath();
-            }
-
-            if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.LeftArrow))
-            {
-                Main.Logger.Log("Playing cougar audio clip", ComplexLogger.FlaggedLoggingLevel.Debug);
-                PlayCougarAudio(0);
-            }
         }
 
     }

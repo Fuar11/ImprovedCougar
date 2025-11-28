@@ -43,7 +43,7 @@ namespace ImprovedCougar
 
         public override void OnUpdate()
         {
-
+            /**
             if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.DownArrow))
             {
                 SpawnRegionPositions.AddMarkersToSpawnRegions(SceneUtilities.GetActiveSceneName());
@@ -57,9 +57,7 @@ namespace ImprovedCougar
                 GUIUtility.systemCopyBuffer = formatted;
                 Logger.Log($"Copied player position: {formatted}", FlaggedLoggingLevel.Debug);
 
-            }
-
-
+            } **/
         }
 
         // This now instantiates only once. Moved other things to EAF scene trigger handlers.
