@@ -1,9 +1,7 @@
 using ComplexLogger;
 using Il2Cpp;
 using ExpandedAiFramework;
-using UnityEngine.Rendering.PostProcessing;
 using UnityEngine;
-using ImprovedCougar.SpawnRegions;
 using AudioMgr;
 using Il2CppRewired;
 using InputManager = Il2Cpp.InputManager;

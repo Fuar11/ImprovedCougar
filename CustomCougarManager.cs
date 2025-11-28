@@ -13,8 +13,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using ModData;
 using MelonLoader.TinyJSON; 
-using static Il2Cpp.CarcassSite;
-using Il2CppEasyRoads3Dv3;
 using Random = UnityEngine.Random;
 
 namespace ImprovedCougar

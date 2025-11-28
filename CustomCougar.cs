@@ -7,18 +7,13 @@ using Il2Cpp;
 using ExpandedAiFramework;
 using Il2CppTLD.AI;
 using UnityEngine;
-using UnityEngine.AI;
 using ImprovedCougar.Pathfinding;
 using Color = UnityEngine.Color;
 using static Il2Cpp.CarcassSite;
-using static UnityEngine.GraphicsBuffer;
 using static Il2CppTLD.AI.CougarManager;
 using AudioMgr;
-using static Il2Cpp.ak.wwise.core;
 using Random = System.Random;
-using Il2CppSystem.Data;
-using Il2CppInterop.Runtime;
-using ImprovedCougar.SpawnRegions;
+
 
 namespace ImprovedCougar
 {
@@ -110,7 +105,6 @@ namespace ImprovedCougar
 
             mBaseAi.m_MaxHP = Settings.CustomSettings.settings.cougarHP;
             
-
             mBaseAi.m_WaypointCompletionBehaviour = BaseAi.WaypointCompletionBehaviouir.Restart;
             mBaseAi.m_TargetWaypointIndex = 0;
 
@@ -123,8 +117,6 @@ namespace ImprovedCougar
 
         protected override bool ProcessCustom()
         {
-
-            //Main.Logger.Log("Processing custom cougar logic", ComplexLogger.FlaggedLoggingLevel.Debug);
 
             DoStartFollowWanderPathFirstFrame();
             MaybeReactToGunshot();
@@ -467,14 +459,14 @@ namespace ImprovedCougar
 
             if (!mWanderPathLoader.Connected())
             {
-                Main.Logger.Log("No wanderpath connected Loading nearest....", ComplexLogger.FlaggedLoggingLevel.Debug);
+                //Main.Logger.Log("No wanderpath connected Loading nearest....", ComplexLogger.FlaggedLoggingLevel.Debug);
             }
 
             wanderPath = mWanderPathLoader.Data;
 
             if(wanderPath == null)
             {
-                Main.Logger.Log("Wander path is null.", ComplexLogger.FlaggedLoggingLevel.Error);
+                //Main.Logger.Log("Wander path is null.", ComplexLogger.FlaggedLoggingLevel.Error);
                 return;
             }
 
@@ -767,7 +759,7 @@ namespace ImprovedCougar
 
             if (toTeleport) toTeleport = false;
 
-            Main.Logger.Log($"Teleporting cougar to position {pos.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+            //Main.Logger.Log($"Teleporting cougar to position {pos.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
 
         }
         private void ToggleInvisibility()
@@ -895,9 +887,6 @@ namespace ImprovedCougar
             timeForNextAudio = GameManager.GetTimeOfDayComponent().GetHoursPlayedNotPaused() + 0.1f; //this probably means audio will play 1 hour after going outside 
 
         }
-
-       
-
         private void MaybePlayCougarAudio()
         {
 
