@@ -94,8 +94,8 @@ namespace ImprovedCougar
         public int minTimeTillNextSpawnRegionMoveInHours = Settings.CustomSettings.settings.minTimeToMove; 
 
         public int daysToArrive = 0;
-        public int maxTimeTillCougarArrivalInDays = 2; //Settings.CustomSettings.settings.maxTimeToArrive; 
-        public int minTimeTillCougarArrivalInDays = 1; //Settings.CustomSettings.settings.minTimeToArrive;
+        public int maxTimeTillCougarArrivalInDays = Settings.CustomSettings.settings.maxTimeToArrive; 
+        public int minTimeTillCougarArrivalInDays = Settings.CustomSettings.settings.minTimeToArrive;
 
         //carcass prefab
         public GameObject carcassPrefab;
@@ -515,10 +515,6 @@ namespace ImprovedCougar
                 var random = new System.Random();
 
                 loadData.DaysToArrive += random.Next(maxTimeTillCougarArrivalInDays, maxTimeTillCougarArrivalInDays);
-
-                //debug
-                loadData.CougarArrived = true;
-                //remove this after
 
             }
             
