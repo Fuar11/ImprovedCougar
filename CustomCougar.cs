@@ -38,7 +38,7 @@ namespace ImprovedCougar
         public CustomCougar(IntPtr ptr) : base(ptr) { }
 
         protected WanderPath wanderPath;
-        protected WanderPathLoader mWanderPathLoader;
+        protected CougarPathLoader mWanderPathLoader;
         protected bool WanderPathConnected = false;
         protected bool mFetchingWanderPath = false;
         protected bool toStartFollowWanderPathMode = true;
@@ -98,7 +98,7 @@ namespace ImprovedCougar
         public override void Initialize(BaseAi ai, TimeOfDay timeOfDay, SpawnRegion spawnRegion, SpawnModDataProxy proxy)
         {
             base.Initialize(ai, timeOfDay, spawnRegion, proxy);
-            mWanderPathLoader = new WanderPathLoader(this, proxy, mManager.DataManager, CheckIfWanderPathIsForCougar);
+            mWanderPathLoader = new CougarPathLoader(this, proxy, mManager.DataManager, CheckIfWanderPathIsForCougar);
             mBaseAi.m_DefaultMode = AiMode.Wander;
             mBaseAi.m_StartMode = AiMode.Wander;
             mBaseAi.m_AttackChanceAfterNearMissGunshot = 10;
