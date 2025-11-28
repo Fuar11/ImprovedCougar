@@ -108,6 +108,9 @@ namespace ImprovedCougar
             spottedRetreatSpeed = mBaseAi.m_StalkSpeed - 1;
             attackSpeed = Settings.CustomSettings.settings.cougarSpeed;
 
+            mBaseAi.m_MaxHP = Settings.CustomSettings.settings.cougarHP;
+            
+
             mBaseAi.m_WaypointCompletionBehaviour = BaseAi.WaypointCompletionBehaviouir.Restart;
             mBaseAi.m_TargetWaypointIndex = 0;
 
