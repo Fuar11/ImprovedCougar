@@ -80,7 +80,7 @@ namespace ImprovedCougar
         public List<CarcassSite> carcasses = new List<CarcassSite>();
 
         //flags
-        public bool cougarArrived = true;
+        public bool cougarArrived = false;
         public bool toMoveSpawnRegion = false;
         public bool toSetNewSpawnRegion = false;
         public bool gunFired = false;
@@ -271,7 +271,7 @@ namespace ImprovedCougar
 
                 //Main.Logger.Log($"New spawn region position {territoryObject.transform.position.ToString()}", FlaggedLoggingLevel.Debug);
 
-                GameObject spawnRegionObject = territoryObject.transform.GetChild(0).gameObject;
+                GameObject spawnRegionObject = territoryObject.transform.Find("SPAWNREGION_Cougar").gameObject;
                 spawnRegionObject.gameObject.SetActive(true); //set spawn region object to true
                 territoryObject.transform.GetChild(1).gameObject.SetActive(true); //set audio object to true
                 territoryObject.transform.GetChild(2).gameObject.SetActive(true); //set wander region object to true, idk if this is used
@@ -510,12 +510,15 @@ namespace ImprovedCougar
             JSON.Populate(loadDataVariant, loadData);
             if(!loadData.CougarArrived && loadData.DaysToArrive == 0)
             {
+
                 var random = new System.Random();
 
                 loadData.DaysToArrive += random.Next(maxTimeTillCougarArrivalInDays, maxTimeTillCougarArrivalInDays);
 
+                Main.Logger.Log($"Creating new data, setting days to arrive to {loadData.DaysToArrive} days", FlaggedLoggingLevel.Debug);
+
             }
-            
+
             daysToArrive = loadData.DaysToArrive;
             cougarArrived = loadData.CougarArrived;
 
