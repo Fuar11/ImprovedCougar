@@ -5,39 +5,35 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ImprovedCougar.Settings;
+using UnityEngine.AI;
+using ExpandedAiFramework;
+using CougarManager = Il2CppTLD.AI.CougarManager;
+using UnityEngine;
 
 namespace ImprovedCougar.Patches
 {
     internal class CougarPatches
     {
-
-        [HarmonyPatch(nameof(BaseAi), nameof(BaseAi.Awake))]
-
-        public class TweakCougarSettings
+        
+        [HarmonyLib.HarmonyPatch(typeof(CougarManager), "MaybeIncreaseThreatLevel")]
+        public class DisableOtherTerritory
         {
-            public static void Postfix(BaseAi __instance)
+            public static bool Prefix(CougarManager __instance)
             {
-                if(__instance.m_AiSubType == AiSubType.Cougar)
-                {
-                    __instance.m_MaxHP = CustomSettings.settings.cougarHP;
-                    __instance.m_ChasePlayerSpeed = CustomSettings.settings.cougarSpeed;
-                }
+                return false;
             }
         }
 
-        [HarmonyPatch(nameof(AiCougar), nameof(AiCougar.EnterDead))]
 
-        public class WhenKilled
+        [HarmonyPatch(typeof(GameAudioManager), "PlaySoundWithPositionTracking", new Type[] { typeof(Il2CppAK.Wwise.Event), typeof(GameObject), typeof(AkCallbackManager.EventCallback), typeof(GameAudioManager.PlayOptions) })]
+
+        public class RemoveCougarAudio
         {
-
-            public static void Postfix()
-            {
-
-                Main.Logger.Log("Cougar killed!", ComplexLogger.FlaggedLoggingLevel.Debug);
-                Main.Logger.Log("Setting threat level to 1.", ComplexLogger.FlaggedLoggingLevel.Debug);
-                GameManager.GetCougarManager().MaybeSetThreatLevel(1);
-                //this might backfire when the days counter runs out but I'm not sure
+            public static bool Prefix(ref Il2CppAK.Wwise.Event soundEvent, ref GameObject go)
+            {                
+                    return soundEvent.Name == "play_Cougar_prefabWildlifeCougar_Spawn" ? false : true;
             }
         }
+
     }
 }

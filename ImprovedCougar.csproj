@@ -16,7 +16,7 @@
 
 	<!-- List of used references -->
 	<ItemGroup>
-		<PackageReference Include="STBlade.Modding.TLD.Il2CppAssemblies.Windows" Version="2.35.0" />
+		<PackageReference Include="STBlade.Modding.TLD.Il2CppAssemblies.Windows" Version="2.40.0" />
 		<PackageReference Include="STBlade.Modding.TLD.ModSettings" Version="1.9.0" />
 		<PackageReference Include="STBlade.Modding.TLD.ModComponent" Version="6.0.1" />
 		<PackageReference Include="STBlade.Modding.TLD.GearSpawner" Version="2.3.1" />
@@ -27,7 +27,25 @@
 			<HintPath>$(TheLongDarkPath)\Mods\ComplexLogger.dll</HintPath>
 		</Reference>
 	</ItemGroup>
-	
+
+	<ItemGroup>
+		<Reference Include="ExpandedAiFramework">
+			<HintPath>$(TheLongDarkPath)\Mods\ExpandedAiFramework.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="ModData">
+			<HintPath>$(TheLongDarkPath)\Mods\ModData.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="AudioManager">
+			<HintPath>$(TheLongDarkPath)\Mods\AudioManager.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
 	<ItemGroup>
 		<Using Include="System.Reflection" />
 		<Using Include="System.Diagnostics.CodeAnalysis" />
@@ -37,6 +55,7 @@
 		<Using Include="UnityEngine" />
 		<Using Include="ModSettings" />
 		<Using Include="ModComponent" />
+		<Using Include="ModData" />
 		<Using Include="LocalizationUtilities" />
 		<Using Include="CraftingRevisions" />
 		<Using Include="GearSpawner" />

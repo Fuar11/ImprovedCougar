@@ -6,22 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ImprovedCougar.Settings;
+using UnityEngine.UI;
 
 namespace ImprovedCougar.Patches
 {
     internal class MapPatches
     {
 
-        [HarmonyPatch(nameof(CougarTerritoryZoneTrigger), nameof(CougarTerritoryZoneTrigger.ActivateZone))]
-
-        public class SetMapRadiusToZero
-        {
-            public static void Prefix(CougarTerritoryZoneTrigger __instance)
-            {
-                if(CustomSettings.settings.showTerritory) __instance.m_MapRevealRadius = 0;
-            }
-        }
-
+     
         [HarmonyPatch(nameof(Panel_Map), nameof(Panel_Map.DoNearbyDetailsCheck))]
 
         public class PreventMappingOnCougarTerritory
@@ -35,7 +27,7 @@ namespace ImprovedCougar.Patches
         {
             public static void Prefix(MapDetail __instance, ref bool isShownOnMap) 
             {
-                if (CustomSettings.settings.showIcon) return;
+                if (GameManager.GetCougarManager().m_ActiveTerritory == null) return;
 
                 isShownOnMap = GameManager.GetCougarManager().m_ActiveTerritory.m_CougarState == CougarManager.CougarState.HasArrived && __instance.m_SpriteName == "ico_CougarMap" ? true : false;
             }

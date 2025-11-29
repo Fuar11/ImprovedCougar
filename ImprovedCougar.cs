@@ -1,15 +1,89 @@
 using ComplexLogger;
+using Il2Cpp;
+using ExpandedAiFramework;
+using UnityEngine;
+using AudioMgr;
+using Il2CppRewired;
+using InputManager = Il2Cpp.InputManager;
 
 namespace ImprovedCougar
 {
     public class Main : MelonMod
     {
         internal static ComplexLogger<Main> Logger = new();
+        internal static CustomCougarManager CustomCougarManager;
+        internal static ClipManager cougarAudioManager;
 
         public override void OnInitializeMelon()
         {
             Logger.Log("Improved Cougar is online", FlaggedLoggingLevel.Always);
-            Settings.CustomSettings.OnLoad();
+            Initialize();
+            //Settings.CustomSettings.OnLoad();
+        }
+        
+        protected bool Initialize()
+        {
+            CustomCougar.CustomCougarSettings.AddToModSettings("Improved Cougar", MenuType.Both);
+            IMapDataManager ImapDataManager;
+
+            if(EAFManager.Instance.DataManager.MapDataManagers.TryGetValue(typeof(WanderPath), out ImapDataManager))
+            {
+
+                WanderPathManager wanderPathManager = (WanderPathManager)ImapDataManager;
+                wanderPathManager.ScheduleLoadAdditional("ImprovedCougar/WanderPaths.json");
+                Logger.Log("Loading paths from file.", FlaggedLoggingLevel.Trace);
+
+            }
+
+            return EAFManager.Instance.RegisterSpawnableAi(typeof(CustomCougar), CustomCougar.CustomCougarSettings);
+
+        }
+
+        public override void OnUpdate()
+        {
+            /**
+            if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.DownArrow))
+            {
+                SpawnRegionPositions.AddMarkersToSpawnRegions(SceneUtilities.GetActiveSceneName());
+            }
+
+            if (InputManager.GetKeyDown(InputManager.m_CurrentContext, KeyCode.UpArrow))
+            {
+
+                Vector3 pos = GameManager.GetPlayerTransform().position;
+                string formatted = $"new Vector3({pos.x:F2}f, {pos.y:F2}f, {pos.z:F2}f)";
+                GUIUtility.systemCopyBuffer = formatted;
+                Logger.Log($"Copied player position: {formatted}", FlaggedLoggingLevel.Debug);
+
+            } **/
+        }
+
+        // This now instantiates only once. Moved other things to EAF scene trigger handlers.
+        public override void OnSceneWasInitialized(int buildIndex, string sceneName)
+        {
+            if (CustomCougarManager == null)
+            {
+                GameObject ccm = new() { name = "CustomCougarManager", layer = vp_Layer.Default };
+                GameObject.DontDestroyOnLoad(ccm);
+                CustomCougarManager ??= ccm.AddComponent<CustomCougarManager>();
+                EAFManager.Instance.HotSwapSubManager(EAFManager.HotSwappableSubManagers.CougarManager, CustomCougarManager);
+            }
+
+            foreach (GameObject go in Resources.FindObjectsOfTypeAll<GameObject>())
+            {
+                if (go.name.Equals("CarcassSite_DoeEaten"))
+                {
+                    CustomCougarManager.carcassPrefab = go;
+                    Main.Logger.Log($"Found carcass prefab.", ComplexLogger.FlaggedLoggingLevel.Debug);
+                }
+            }
+
+            if (sceneName.ToLowerInvariant().Contains("menu"))
+            {
+                cougarAudioManager = AudioMaster.NewClipManager();
+                cougarAudioManager.LoadClipsFromDir("ImprovedCougar/Audio", ClipManager.LoadType.Compressed);
+            }
+
         }
     }
 }
