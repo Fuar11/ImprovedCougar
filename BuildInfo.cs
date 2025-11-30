@@ -12,7 +12,7 @@ namespace ImprovedCougar
         /// <summary>Who made the mod</summary>
         public const string Author                          = "Fuar";
         /// <summary>Current version (Using Major.Minor.Build) </summary>
-        public const string Version                         = "2.0.0";
+        public const string Version                         = "2.0.1";
         /// <summary>Name used on GUI's, like ModSettings</summary>
         public const string GUIName                         = "Improved Cougar";
         /// <summary>The minimum Melon Loader version that your mod requires</summary>
