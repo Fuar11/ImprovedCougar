@@ -11,7 +11,7 @@ namespace ImprovedCougar.SpawnRegions
 
         public Vector3 position;
         public List<Vector3> carcassPositions;
-
+        public SpawnRegionTerritory() { }
         public SpawnRegionTerritory(Vector3 pos, List<Vector3> carcassPos) { 
             position = pos;
             carcassPositions = carcassPos;
