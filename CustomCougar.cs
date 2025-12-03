@@ -156,7 +156,7 @@ namespace ImprovedCougar
             if (currentDistance >= attackDistance)
             {
 
-                if(currentDistance >= maxStalkDistance)
+                if (currentDistance >= maxStalkDistance)
                 {
                     //go back to what it was doing before stalking, just patrolling for now
                     StartFollowWanderPath();
@@ -188,7 +188,7 @@ namespace ImprovedCougar
                     SetAiMode((AiMode)CustomCougarAiMode.Freeze);
                 }
 
-                if(currentDistance <= closeDistance)
+                if (currentDistance <= closeDistance)
                 {
                     currentSpeed = closeStalkSpeed;
                 }
@@ -209,7 +209,7 @@ namespace ImprovedCougar
 
                     if (Vector3.Distance(cougar.position, target) < reachThreshold)
                     {
-                        if(currentIndex != 0 && target != player.position)
+                        if (currentIndex != 0 && target != player.position)
                         {
                             lastPosition = target;
                         }
@@ -256,12 +256,12 @@ namespace ImprovedCougar
                     else
                     {
                         mBaseAi.SetAiMode((AiMode)CustomCougarAiMode.Retreat);
-                    } 
+                    }
                 }
             }
             else
             {
-                if(!IsPlayerFacingCougar(player, cougar))
+                if (!IsPlayerFacingCougar(player, cougar))
                 {
                     Main.Logger.Log("Attacking!", ComplexLogger.FlaggedLoggingLevel.Debug);
                     mBaseAi.SetAiMode(DetermineAttackType());
@@ -350,7 +350,7 @@ namespace ImprovedCougar
                 if (retreatPosition == spawnPosition)
                 {
                     Main.Logger.Log("Cougar has reached it's territory, going back to wandering", ComplexLogger.FlaggedLoggingLevel.Debug);
-                    mBaseAi.SetAiMode(AiMode.FollowWaypoints); 
+                    mBaseAi.SetAiMode(AiMode.FollowWaypoints);
                 }
                 else
                 {
@@ -437,12 +437,12 @@ namespace ImprovedCougar
                 {
                     mManager.DataManager.ScheduleMapDataRequest<WanderPath>(new GetNearestMapDataRequest<WanderPath>(mBaseAi.transform.position, mModDataProxy.Scene, (nearestSpot, result2) =>
                     {
-                       AttachWanderPath(nearestSpot);
-                    }, false, CheckIfWanderPathIsForCougar, 3));            
+                        AttachWanderPath(nearestSpot);
+                    }, false, CheckIfWanderPathIsForCougar, 3));
                 }
             }
 
-            if(wanderPath == null)
+            if (wanderPath == null)
             {
                 Main.Logger.Log("Wander path is null.", ComplexLogger.FlaggedLoggingLevel.Error);
                 return;
@@ -468,7 +468,7 @@ namespace ImprovedCougar
             if ((CougarPath)path.WanderPathType == CougarPath.Cougar) Main.Logger.Log("WanderPath is Cougar wanderpath", ComplexLogger.FlaggedLoggingLevel.Debug);
             else Main.Logger.Log("WanderPath is NOT cougar path.", ComplexLogger.FlaggedLoggingLevel.Debug);
             return (CougarPath)path.WanderPathType == CougarPath.Cougar ? true : false;
-        }  
+        }
 
         protected void PreProcessingFollowPath()
         {
@@ -672,7 +672,7 @@ namespace ImprovedCougar
         {
             float playerStrength = 100;
 
-            if(GameManager.GetConditionComponent().GetNormalizedCondition() <= 55f) playerStrength -= 25f;
+            if (GameManager.GetConditionComponent().GetNormalizedCondition() <= 55f) playerStrength -= 25f;
             if (GameManager.GetFreezingComponent().GetFreezingLevel() == FreezingLevel.Freezing) playerStrength -= 10f;
             if (GameManager.GetFatigueComponent().GetFatigueLevel() <= FatigueLevel.Tired) playerStrength -= 30f;
             if (GameManager.GetHungerComponent().GetHungerLevel() <= HungerLevel.VeryHungry) playerStrength -= 10f;
@@ -739,7 +739,7 @@ namespace ImprovedCougar
 
         private void DoSomethingWithAudio()
         {
-            
+
         }
 
 
@@ -908,5 +908,9 @@ namespace ImprovedCougar
 
         }
 
+        #region EAF Abstract Implementations
+        protected override void IncrementKillStat() => StatsManager.IncrementValue(Il2CppTLD.Stats.StatID.CougarsKilled);
+
+        #endregion
     }
 }
