@@ -46,6 +46,10 @@
 		</Reference>
 	</ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
 	<ItemGroup>
 		<Using Include="System.Reflection" />
 		<Using Include="System.Diagnostics.CodeAnalysis" />
