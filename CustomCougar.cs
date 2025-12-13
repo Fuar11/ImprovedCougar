@@ -1004,6 +1004,12 @@ namespace ImprovedCougar
             return false;
         }
 
+        #region EAF Abstract Implementations
+
+        protected override void IncrementKillStat() => StatsManager.IncrementValue(Il2CppTLD.Stats.StatID.CougarsKilled);
+
+        #endregion
+
         //debug
         private void DoOnUpdate()
         {

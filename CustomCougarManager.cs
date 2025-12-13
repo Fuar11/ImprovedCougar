@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using ModData;
-using MelonLoader.TinyJSON; 
+using Newtonsoft.Json;
 using Random = UnityEngine.Random;
 
 namespace ImprovedCougar
@@ -490,7 +490,7 @@ namespace ImprovedCougar
             loadData.lastSpawnRegionSP = lastSpawnRegionSP;
             loadData.latestRegion = latestRegion;
 
-            string json = JSON.Dump(loadData, EncodeOptions.PrettyPrint | EncodeOptions.NoTypeHints);
+            string json = JsonConvert.SerializeObject(loadData);
             if (json == null || json == string.Empty)
             {
                 return;
@@ -505,9 +505,7 @@ namespace ImprovedCougar
             {
                 return;
             }
-            Variant loadDataVariant = JSON.Load(loadDataJSON);
-            LoadData loadData = new LoadData();
-            JSON.Populate(loadDataVariant, loadData);
+            LoadData loadData = JsonConvert.DeserializeObject<LoadData>(loadDataJSON) ?? new LoadData();
             if(!loadData.CougarArrived && loadData.DaysToArrive == 0)
             {
 
