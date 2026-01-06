@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using ModData;
-using MelonLoader.TinyJSON; 
+using TLD.TinyJSON;
 using Random = UnityEngine.Random;
 
 namespace ImprovedCougar
