@@ -138,6 +138,8 @@ namespace ImprovedCougar.SpawnRegions
 
             if (list == null || list.Count == 0) return null;
 
+            //Main.Logger.Log($"GetRandomSpawnRegion {region} list length = {list.Count}", ComplexLogger.FlaggedLoggingLevel.Debug);
+
             return list[random.Next(list.Count)];
         }
 

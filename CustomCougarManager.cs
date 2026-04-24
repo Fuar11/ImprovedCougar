@@ -241,7 +241,7 @@ namespace ImprovedCougar
             debugTimeToMoveSpawnRegionInHours = timeToAdd; //this is just to view the time in hours to wait until the next one in ue
             toMoveSpawnRegion = true;
             toSetNewSpawnRegion = false;
-            //Main.Logger.Log($"New spawn region {currentTerritory} set!", FlaggedLoggingLevel.Debug);
+            //Main.Logger.Log($"New spawn region {currentTerritory.position.ToString()} set!", FlaggedLoggingLevel.Debug);
         }
 
         public void UpdateCougarSpawnRegionPosition(string scene)
@@ -503,6 +503,7 @@ namespace ImprovedCougar
             string loadDataJSON = modData.Load("LoadData");
             if (string.IsNullOrEmpty(loadDataJSON))
             {
+                Main.Logger.Log("LoadData JSON is null or empty.", FlaggedLoggingLevel.Error);
                 return;
             }
             Variant loadDataVariant = JSON.Load(loadDataJSON);
@@ -537,6 +538,7 @@ namespace ImprovedCougar
             lastSpawnRegionFA = loadData.lastSpawnRegionFA;
             lastSpawnRegionSP = loadData.lastSpawnRegionSP;
 
+            SetCurrentSpawnRegionToExistingSpawnRegion(latestRegion);
         }
 
         public void OnQuitToMainMenu()

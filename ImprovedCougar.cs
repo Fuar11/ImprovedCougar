@@ -14,6 +14,11 @@ namespace ImprovedCougar
         internal static CustomCougarManager CustomCougarManager;
         internal static ClipManager cougarAudioManager;
 
+        private static AssetBundle? assetBundle;
+        internal static AssetBundle BackgroundsAssetBundle
+        {
+            get => assetBundle ?? throw new System.NullReferenceException(nameof(assetBundle));
+        }
         public override void OnInitializeMelon()
         {
             Logger.Log("Improved Cougar is online", FlaggedLoggingLevel.Always);
@@ -80,10 +85,31 @@ namespace ImprovedCougar
 
             if (sceneName.ToLowerInvariant().Contains("menu"))
             {
+                assetBundle = LoadAssetBundleFromStream("ImprovedCougar.improvedcougaraudio");
+
+                if(assetBundle == null)
+                {
+                    Logger.Log("Assetbundle is null", FlaggedLoggingLevel.Error);
+                }
+
                 cougarAudioManager = AudioMaster.NewClipManager();
-                cougarAudioManager.LoadClipsFromDir("ImprovedCougar/Audio", ClipManager.LoadType.Compressed);
+                cougarAudioManager.LoadAllClipsFromBundle(assetBundle);
             }
 
+        }
+
+        public static AssetBundle LoadAssetBundleFromStream(string path)
+        {
+            using (System.IO.Stream? stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(path))
+            {
+                MemoryStream? memory = new((int)stream.Length);
+                stream!.CopyTo(memory);
+
+                Il2CppSystem.IO.MemoryStream memoryStream = new Il2CppSystem.IO.MemoryStream(memory.ToArray());
+
+                AssetBundle loadFromMemoryInternal = AssetBundle.LoadFromStream(memoryStream);
+                return loadFromMemoryInternal;
+            }
         }
     }
 }

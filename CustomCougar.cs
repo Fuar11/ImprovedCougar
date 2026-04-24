@@ -112,7 +112,7 @@ namespace ImprovedCougar
 
            SetupAudioSettings();
 
-            Main.Logger.Log($"Cougar initialized at position {mBaseAi.gameObject.transform.position.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
+           Main.Logger.Log($"Cougar initialized at position {mBaseAi.gameObject.transform.position.ToString()}", ComplexLogger.FlaggedLoggingLevel.Debug);
         }
 
         protected override bool ProcessCustom()
@@ -915,8 +915,13 @@ namespace ImprovedCougar
 
         private void PlayCougarAudio(int index)
         {
+
             Clip clip = Main.cougarAudioManager.GetClipAtIndex(index);
+            clip.audioClip.LoadAudioData();
             audio.AssignClip(clip);
+
+            Main.Logger.Log("Playing cougar audio", ComplexLogger.FlaggedLoggingLevel.Debug);
+
             audio.Play();
         }
 

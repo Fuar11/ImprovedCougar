@@ -14,9 +14,17 @@
 		<TheLongDarkPath>C:\Program Files (x86)\Steam\steamapps\common\TheLongDark</TheLongDarkPath>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <None Remove="improvedcougaraudio" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="improvedcougaraudio" />
+	</ItemGroup>
+
 	<!-- List of used references -->
 	<ItemGroup>
-		<PackageReference Include="STBlade.Modding.TLD.Il2CppAssemblies.Windows" Version="2.51.0" />
+		<PackageReference Include="Waltz.Modding.TLD.Il2CppAssemblies.Windows" Version="2.52.0" />
 	</ItemGroup>
 
 	<ItemGroup>
