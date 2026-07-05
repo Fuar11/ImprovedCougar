@@ -869,7 +869,7 @@ namespace ImprovedCougar
 
             audio.SetVolume(100f);
             audio._audioSource.minDistance = 20f;
-            audio._audioSource.maxDistance = 1500f;
+            audio._audioSource.maxDistance = 1300f;
             audio._audioSource.rolloffMode = AudioRolloffMode.Custom;
 
             AnimationCurve curve = new AnimationCurve(

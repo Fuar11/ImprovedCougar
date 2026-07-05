@@ -107,6 +107,15 @@ namespace ImprovedCougar
 
                 Il2CppSystem.IO.MemoryStream memoryStream = new Il2CppSystem.IO.MemoryStream(memory.ToArray());
 
+                if (memoryStream == null)
+                {
+                    Logger.Log("Memory stream is null", FlaggedLoggingLevel.Error);
+                }
+                else if(memoryStream.Length == 0)
+                {
+                    Logger.Log("Memory stream is empty", FlaggedLoggingLevel.Error);
+                }
+
                 AssetBundle loadFromMemoryInternal = AssetBundle.LoadFromStream(memoryStream);
                 return loadFromMemoryInternal;
             }
